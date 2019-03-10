@@ -179,10 +179,12 @@
     <ClCompile Include="src\ClockPattern.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\ofApp.cpp" />
+    <ClCompile Include="src\SheetCanvas.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\ClockPattern.h" />
     <ClInclude Include="src\ofApp.h" />
+    <ClInclude Include="src\SheetCanvas.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="$(OF_ROOT)\libs\openFrameworksCompiled\project\vs\openframeworksLib.vcxproj">

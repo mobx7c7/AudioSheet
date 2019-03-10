@@ -10,6 +10,9 @@
     <ClCompile Include="src\ClockPattern.cpp">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="src\SheetCanvas.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="src">
@@ -24,6 +27,9 @@
       <Filter>src</Filter>
     </ClInclude>
     <ClInclude Include="src\ClockPattern.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\SheetCanvas.h">
       <Filter>src</Filter>
     </ClInclude>
   </ItemGroup>
