@@ -1,18 +1,35 @@
 #pragma once
 #include "ofMain.h"
 #include "SheetCanvas.h"
+#include "SheetStream.h"
+#include <ofSoundStream.h>
+#include <ofSoundBuffer.h>
+#include <mutex>
 
 class ofApp : public ofBaseApp
 {
 private:
 	std::unique_ptr<SheetCanvas>
 		sheetCanvas;
+	std::unique_ptr<SheetStream>
+		sheetStream;
+	ofSoundStream
+		soundStream;
+	std::vector<short>
+		audioBuffer;
+	std::mutex
+		audioMutex;
+	int
+		audioOffset = 0;
 	bool
-		needsUpdate;
+		needsUpdate,
+		audioFilled;
 public:
 	void setup();
 	void update();
 	void draw();
+	void sheetFrameOut(const SheetFrame& frame);
+	void audioOut(ofSoundBuffer & buffer);
 	void keyPressed(int key);
 	void keyReleased(int key);
 	void mouseMoved(int x, int y);

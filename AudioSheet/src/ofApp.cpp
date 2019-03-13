@@ -29,8 +29,26 @@ namespace Metrics
 
 void ofApp::setup()
 {
+	ofLogToConsole();
+	ofSetLogLevel(OF_LOG_NOTICE);
+
+	ofSoundStreamSettings settings;
+	settings.setApi(ofSoundDevice::MS_DS);
+	settings.setOutListener(this);
+	settings.numOutputChannels = 2;
+	settings.sampleRate = 44100;
+	settings.bufferSize = 512;
+	settings.numBuffers = 4;
+	soundStream.setup(settings);
+
 	sheetCanvas = std::make_unique<SheetCanvas>(this);
 	sheetCanvas->setup();
+
+	sheetStream = std::make_unique<SheetStream>();
+	sheetStream->setup();
+	sheetStream->setFrameCallback(std::bind(&ofApp::sheetFrameOut, this, std::placeholders::_1));
+	sheetStream->setFinishCallback([&]() { audioFilled = true; });
+	sheetStream->load(ofToDataPath("audio.flac"));
 
 	needsUpdate = true;
 }
@@ -62,6 +80,24 @@ void ofApp::draw()
 	ofDrawBitmapString(ss.str(), glm::vec2(0, 10));
 }
 
+void ofApp::sheetFrameOut(const SheetFrame& frame)
+{
+	auto* beg = (short*)frame.data;
+	auto* end = beg + (frame.samples * frame.channels);
+	audioBuffer.insert(audioBuffer.end(), beg, end);
+}
+
+void ofApp::audioOut(ofSoundBuffer & buffer)
+{
+	if (audioOffset < audioBuffer.size() && audioFilled)
+	{
+		size_t amountNeeded = std::min(buffer.getNumFrames() * buffer.getNumChannels(), audioBuffer.size() - audioOffset);
+		const auto* audioOffsetPtr = audioBuffer.data() + audioOffset;
+		buffer.copyFrom(audioOffsetPtr, buffer.getNumFrames(), 2, 44100);
+		audioOffset += amountNeeded;
+	}
+}
+
 void ofApp::keyPressed(int key)
 {
 	switch (key)
@@ -69,6 +105,12 @@ void ofApp::keyPressed(int key)
 		case OF_KEY_F5:
 			sheetCanvas->reload();
 			needsUpdate = true;
+			break;
+		case 's':
+			soundStream.start();
+			break;
+		case 'e':
+			soundStream.stop();
 			break;
 	}
 }
@@ -110,7 +152,7 @@ void ofApp::mouseExited(int x, int y)
 
 void ofApp::windowResized(int w, int h)
 {
-	
+
 }
 
 void ofApp::gotMessage(ofMessage msg)
