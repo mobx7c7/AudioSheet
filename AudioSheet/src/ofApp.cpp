@@ -47,8 +47,13 @@ void ofApp::setup()
 	sheetStream = std::make_unique<SheetStream>();
 	sheetStream->setup();
 	sheetStream->setFrameCallback(std::bind(&ofApp::sheetFrameOut, this, std::placeholders::_1));
-	sheetStream->setFinishCallback([&]() { audioFilled = true; });
 	sheetStream->load(ofToDataPath("audio.flac"));
+	while (!sheetStream->isFinished())
+	{
+		sheetStream->next();
+	}
+	sheetStream->close();
+	audioFilled = true;
 
 	needsUpdate = true;
 }
@@ -82,19 +87,28 @@ void ofApp::draw()
 
 void ofApp::sheetFrameOut(const SheetFrame& frame)
 {
-	auto* beg = (short*)frame.data;
-	auto* end = beg + (frame.samples * frame.channels);
-	audioBuffer.insert(audioBuffer.end(), beg, end);
+	uint8_t* data = frame.data;
+
+	int s, c;
+
+	for (s = 0; s < frame.samples; s++)
+	{
+		for (c = 0; c < frame.channels; c++)
+		{
+			data += frame.sampleSize;
+			audioBuffer.push_back(*reinterpret_cast<uint16_t*>(data));
+		}
+	}
 }
 
 void ofApp::audioOut(ofSoundBuffer & buffer)
 {
 	if (audioOffset < audioBuffer.size() && audioFilled)
 	{
-		size_t amountNeeded = std::min(buffer.getNumFrames() * buffer.getNumChannels(), audioBuffer.size() - audioOffset);
+		size_t approvedLength = std::min(buffer.getNumFrames() * buffer.getNumChannels(), audioBuffer.size() - audioOffset);
 		const auto* audioOffsetPtr = audioBuffer.data() + audioOffset;
-		buffer.copyFrom(audioOffsetPtr, buffer.getNumFrames(), 2, 44100);
-		audioOffset += amountNeeded;
+		buffer.copyFrom(audioOffsetPtr, buffer.getNumFrames(), buffer.getNumChannels(), buffer.getSampleRate());
+		audioOffset += approvedLength;
 	}
 }
 

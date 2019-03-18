@@ -134,37 +134,33 @@ void SheetStream::reset()
 	stream = nullptr;
 	codecContext = nullptr;
 	formatContext = nullptr;
+	finished = false;
 }
 
-void SheetStream::readPackets()
+void SheetStream::readNextFrame()
 {
-	int result;
-	AVPacket readingPacket;
+	int result = av_read_frame(formatContext, &readingPacket);
 
-	av_init_packet(&readingPacket);
-
-	while ((result = av_read_frame(formatContext, &readingPacket)) == 0)
+	switch (result)
 	{
-		ofLogVerbose() << "Reading frame";
-
-		if (readingPacket.stream_index == stream->index)
-		{
-			decodePacket(readingPacket);
-		}
-		// Free on every av_read_frame() to avoid memory leak
-		av_packet_unref(&readingPacket);
-	}
-
-	if (result != AVERROR_EOF)
-	{
-		throw std::exception(("Error while reading packets: " + getErrorString(result)).c_str());
-	}
-
-	if (codecContext->codec->capabilities & AV_CODEC_CAP_DELAY)
-	{
-		av_init_packet(&readingPacket);
-
-		decodePacket(readingPacket);
+		case 0:
+			if (readingPacket.stream_index == stream->index)
+			{
+				decodePacket(readingPacket);
+			}
+			// Free on every av_read_frame() to avoid memory leak
+			av_packet_unref(&readingPacket);
+			break;
+		case AVERROR_EOF:
+			if (codecContext->codec->capabilities & AV_CODEC_CAP_DELAY)
+			{
+				av_init_packet(&readingPacket);
+				decodePacket(readingPacket);
+			}
+			finished = true;
+			break;
+		default:
+			throw std::exception(("Error while reading packets: " + getErrorString(result)).c_str());
 	}
 }
 
@@ -181,28 +177,36 @@ void SheetStream::decodePacket(AVPacket packet)
 
 	while ((result = avcodec_receive_frame(codecContext, frame)) == 0)
 	{
+		std::stringstream ss;
+		ss << std::fixed << std::setprecision(8);
+		ss
+			<< (frame->pkt_duration * av_q2d(stream->time_base)) << '\t'
+			<< (frame->pkt_pts * av_q2d(stream->time_base)) << '\t'
+			<< (frame->pkt_dts * av_q2d(stream->time_base)) << '\t'
+			<< (frame->pkt_pos * av_q2d(stream->time_base)) << '\t';
+		ofLogNotice() << ss.str();
+
+		sheetFrame.data = frame->data[0];
+		sheetFrame.size = frame->linesize[0];
+		sheetFrame.samples = frame->nb_samples;
+		sheetFrame.sampleRate = codecContext->sample_rate;
+		sheetFrame.sampleSize = av_get_bytes_per_sample(codecContext->sample_fmt);
+		sheetFrame.channels = codecContext->channels;
+
 		if (frameCallback)
-		{
-			sheetFrame.data = frame->data[0];
-			sheetFrame.size = frame->linesize[0];
-			sheetFrame.samples = frame->nb_samples;
-			sheetFrame.sampleRate = codecContext->sample_rate;
-			sheetFrame.sampleSize = av_get_bytes_per_sample(codecContext->sample_fmt);
-			sheetFrame.channels = codecContext->channels;
 			frameCallback(sheetFrame);
-		}
 	}
 }
 
 void SheetStream::setup()
 {
-	if (!setupDone)
+	if (!setted)
 	{
 		printConfiguration();
 		printDecoders();
 		reset();
 		av_log_set_callback(avLogOutput);
-		setupDone = true;
+		setted = true;
 	}
 }
 
@@ -223,9 +227,13 @@ void SheetStream::setFinishCallback(FinishCallback cb)
 
 void SheetStream::load(std::string filepath)
 {
-	if (!setupDone)
+	if (!setted)
 	{
 		ofLogError() << "Setup wasn't made";
+	}
+	else if (formatContext)
+	{
+		return;
 	}
 	else
 	{
@@ -272,20 +280,51 @@ void SheetStream::load(std::string filepath)
 
 			printFormatInfo();
 
-			readPackets();
+			av_init_packet(&readingPacket);
 		}
 		catch (const std::exception& e)
 		{
 			if (errorCallback)
 				errorCallback(std::string(e.what()));
+
+			close();
 		}
-
-		cleanup();
-
-		if (finishCallback)
-			finishCallback();
 	}
 }
 
 void SheetStream::next()
-{}
+{
+	if (!finished)
+	{
+		
+		try
+		{
+			ofLogVerbose() << "Reading frame";
+
+			readNextFrame();
+
+			if (finished && finishCallback)
+				finishCallback();
+		}
+		catch (const std::exception& e)
+		{
+			if (errorCallback)
+				errorCallback(std::string(e.what()));
+
+			close();
+		}
+	}
+}
+
+void SheetStream::close()
+{
+	if (formatContext)
+	{
+		cleanup();
+	}
+}
+
+bool SheetStream::isFinished()
+{
+	return finished;
+}

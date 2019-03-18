@@ -41,6 +41,8 @@ private:
 		*frame;
 	AVStream
 		*stream;
+	AVPacket
+		readingPacket;
 	AVCodecContext
 		*codecContext;
 	AVFormatContext
@@ -52,7 +54,8 @@ private:
 	FinishCallback
 		finishCallback;
 	bool
-		setupDone = false;
+		setted = false,
+		finished = false;
 private:
 	void printConfiguration();
 	void printDecoders();
@@ -61,17 +64,17 @@ private:
 private:
 	void reset();
 	void cleanup();
-	void readPackets();
+	void readNextFrame();
 	void decodePacket(AVPacket packet);
 public:
 	SheetStream();
 	~SheetStream();
 	void setup();
+	void load(std::string filePath);
+	void next();
+	void close();
 	void setErrorCallback(ErrorCallback cb);
 	void setFrameCallback(FrameCallback cb);
 	void setFinishCallback(FinishCallback cb);
-	void load(std::string filePath);
-	void next();
-	//int getSampleRate() { return codecContext->sample_rate; }
-	//int getChannels() { return codecContext->channels; }
+	bool isFinished();
 };
