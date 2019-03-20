@@ -16,6 +16,9 @@
     <ClCompile Include="src\SheetStream.cpp">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="src\StreamInput.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="src">
@@ -23,6 +26,9 @@
     </Filter>
     <Filter Include="addons">
       <UniqueIdentifier>{497d7f72-9813-4173-abe7-0dc5be3fa124}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\StreamInput">
+      <UniqueIdentifier>{2862afaa-4265-46da-b83d-f57654fa7e99}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -36,6 +42,9 @@
       <Filter>src</Filter>
     </ClInclude>
     <ClInclude Include="src\SheetStream.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\StreamInput.h">
       <Filter>src</Filter>
     </ClInclude>
   </ItemGroup>

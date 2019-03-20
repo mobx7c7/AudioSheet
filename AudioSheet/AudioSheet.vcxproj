@@ -184,12 +184,14 @@
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\ofApp.cpp" />
     <ClCompile Include="src\SheetCanvas.cpp" />
+    <ClCompile Include="src\StreamInput.cpp" />
     <ClCompile Include="src\SheetStream.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\ClockPattern.h" />
     <ClInclude Include="src\ofApp.h" />
     <ClInclude Include="src\SheetCanvas.h" />
+    <ClInclude Include="src\StreamInput.h" />
     <ClInclude Include="src\SheetStream.h" />
   </ItemGroup>
   <ItemGroup>
