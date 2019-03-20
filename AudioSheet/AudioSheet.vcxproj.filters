@@ -19,6 +19,15 @@
     <ClCompile Include="src\StreamInput.cpp">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="src\StreamInput\Platform\Windows\WiaScannerInput.cpp">
+      <Filter>src\StreamInput\Platform\Windows</Filter>
+    </ClCompile>
+    <ClCompile Include="src\StreamInput\Platform\Windows\CWiaTransferCallback.cpp">
+      <Filter>src\StreamInput\Platform\Windows</Filter>
+    </ClCompile>
+    <ClCompile Include="src\StreamInput\Platform\Windows\WiaCommon.cpp">
+      <Filter>src\StreamInput\Platform\Windows</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="src">
@@ -29,6 +38,12 @@
     </Filter>
     <Filter Include="src\StreamInput">
       <UniqueIdentifier>{2862afaa-4265-46da-b83d-f57654fa7e99}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\StreamInput\Platform">
+      <UniqueIdentifier>{c627b73b-99b9-4328-bbc6-424c3c48286b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\StreamInput\Platform\Windows">
+      <UniqueIdentifier>{96b7d337-c9fa-429e-9ea2-423de164e8cc}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -46,6 +61,15 @@
     </ClInclude>
     <ClInclude Include="src\StreamInput.h">
       <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\StreamInput\Platform\Windows\CWiaTransferCallback.h">
+      <Filter>src\StreamInput\Platform\Windows</Filter>
+    </ClInclude>
+    <ClInclude Include="src\StreamInput\Platform\Windows\WiaScannerInput.h">
+      <Filter>src\StreamInput\Platform\Windows</Filter>
+    </ClInclude>
+    <ClInclude Include="src\StreamInput\Platform\Windows\WiaCommon.h">
+      <Filter>src\StreamInput\Platform\Windows</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

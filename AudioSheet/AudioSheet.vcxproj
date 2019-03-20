@@ -186,6 +186,9 @@
     <ClCompile Include="src\SheetCanvas.cpp" />
     <ClCompile Include="src\StreamInput.cpp" />
     <ClCompile Include="src\SheetStream.cpp" />
+    <ClCompile Include="src\StreamInput\Platform\Windows\CWiaTransferCallback.cpp" />
+    <ClCompile Include="src\StreamInput\Platform\Windows\WiaCommon.cpp" />
+    <ClCompile Include="src\StreamInput\Platform\Windows\WiaScannerInput.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\ClockPattern.h" />
@@ -193,6 +196,9 @@
     <ClInclude Include="src\SheetCanvas.h" />
     <ClInclude Include="src\StreamInput.h" />
     <ClInclude Include="src\SheetStream.h" />
+    <ClInclude Include="src\StreamInput\Platform\Windows\CWiaTransferCallback.h" />
+    <ClInclude Include="src\StreamInput\Platform\Windows\WiaCommon.h" />
+    <ClInclude Include="src\StreamInput\Platform\Windows\WiaScannerInput.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="$(OF_ROOT)\libs\openFrameworksCompiled\project\vs\openframeworksLib.vcxproj">
