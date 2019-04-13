@@ -74,6 +74,9 @@
     <ClInclude Include="src\StreamEvent.h">
       <Filter>src</Filter>
     </ClInclude>
+    <ClInclude Include="src\StreamInput\ScannerInput.h">
+      <Filter>src\StreamInput</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="icon.rc" />
