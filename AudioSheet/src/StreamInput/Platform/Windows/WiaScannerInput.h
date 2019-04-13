@@ -1,13 +1,13 @@
 #pragma once
-#include "..\..\..\StreamInput.h"
 #include <wia_lh.h>
+#include "..\..\ScannerInput.h"
 #include <string>
 #include <vector>
 
 #define FOLDER_TRANSFER TRUE
 #define FILE_TRANSFER FALSE
 
-class WiaScannerInput : public StreamInput
+class WiaScannerInput : public ScannerInput
 {
 public:
 	struct Field
