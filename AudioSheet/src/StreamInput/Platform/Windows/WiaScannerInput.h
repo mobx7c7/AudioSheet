@@ -1,6 +1,7 @@
 #pragma once
-#include <wia_lh.h>
 #include "..\..\ScannerInput.h"
+#include <Sti.h>
+#include <Wia.h>
 #include <string>
 #include <vector>
 
