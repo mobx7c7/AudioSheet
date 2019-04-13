@@ -2,6 +2,7 @@
 #include "ofMain.h"
 #include "SheetCanvas.h"
 #include "SheetStream.h"
+#include "DeviceImageReader.h"
 #include <ofSoundStream.h>
 #include <ofSoundBuffer.h>
 #include <mutex>
@@ -13,6 +14,8 @@ private:
 		sheetCanvas;
 	std::unique_ptr<SheetStream>
 		sheetStream;
+	std::unique_ptr<DeviceImageReader>
+		deviceImageReader;
 	ofSoundStream
 		soundStream;
 	std::vector<short>

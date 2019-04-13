@@ -40,6 +40,13 @@ void ofApp::setup()
 	settings.bufferSize = 512;
 	settings.numBuffers = 4;
 	soundStream.setup(settings);
+	///////////////////////////////////////////////////////////////////////
+	
+	deviceImageReader = std::make_unique<DeviceImageReader>();
+	deviceImageReader->setup();
+	deviceImageReader->acquire();
+	
+	///////////////////////////////////////////////////////////////////////
 
 	sheetCanvas = std::make_unique<SheetCanvas>(this);
 	sheetCanvas->setup();
@@ -73,6 +80,7 @@ void ofApp::draw()
 	ofViewport(ofGetWindowRect());
 
 	sheetCanvas->draw(ofGetWindowRect());
+	deviceImageReader->draw(ofGetWindowRect());
 
 	std::stringstream ss;
 	ss
