@@ -47,6 +47,12 @@ WiaScannerInput::~WiaScannerInput()
 	}
 }
 
+void WiaScannerInput::HandleEventsFromTransferCb(const StreamEventBase& ev)
+{
+	if (eventCb)
+		eventCb(ev);
+}
+
 HRESULT WiaScannerInput::CreateWiaDeviceManager(IWiaDevMgr2 ** ppWiaDevMgr)
 {
 	if (NULL == ppWiaDevMgr)
@@ -313,7 +319,9 @@ HRESULT WiaScannerInput::DownloadItem(IWiaItem2* pWiaItem2, BOOL bTransferFlag)
 	if (SUCCEEDED(hr))
 	{
 		// Create our callback class
-		CWiaTransferCallback *pWiaClassCallback = new CWiaTransferCallback;
+		CWiaTransferCallback *pWiaClassCallback = new CWiaTransferCallback(
+			std::bind(&WiaScannerInput::HandleEventsFromTransferCb, this, std::placeholders::_1));
+
 		if (pWiaClassCallback)
 		{
 			// Get the IWiaTransferCallback interface from our callback class.

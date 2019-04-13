@@ -1,4 +1,5 @@
 #pragma once
+#include "..\..\ScannerInput.h"
 #include "WiaCommon.h"
 
 #define MAX_TEMP_PATH 1024
@@ -14,10 +15,11 @@ private:
 	BOOL  m_bFeederTransfer;					// flag indicating whether download is from feeder item
 	BSTR  m_bstrDirectoryName;					// download directory 
 	TCHAR m_szFileName[MAX_FILENAME_LENGTH];	// download file
+	StreamEventCb m_eventCb;
 
 public:
 
-	CWiaTransferCallback();
+	CWiaTransferCallback(StreamEventCb eventCb);
 	virtual ~CWiaTransferCallback();
 
 	HRESULT InitializeCallback(TCHAR* bstrDirectoryName, BSTR bstrExt, BOOL bFeederTransfer);

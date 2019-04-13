@@ -1,8 +1,10 @@
 #include "CWiaTransferCallback.h"
+#include "WiaScannerInput.h"
 #include <ofLog.h>
 
-CWiaTransferCallback::CWiaTransferCallback()
+CWiaTransferCallback::CWiaTransferCallback(StreamEventCb eventCb)
 {
+	m_eventCb = eventCb;
 	m_cRef = 1;  // initializing it to 1 so that when object is created, we can call Release() on it. 
 	m_lPageCount = 0;
 	m_bFeederTransfer = FALSE;
@@ -109,28 +111,36 @@ HRESULT STDMETHODCALLTYPE CWiaTransferCallback::TransferCallback(LONG lFlags, Wi
 		ReportError(TEXT("TransferCallback() was called with invalid args"), hr);
 		return hr;
 	}
+
+	ScannerInputEvent ev;
+	ev.page = 1;
 	
 	switch (pWiaTransferParams->lMessage)
 	{
 		case WIA_TRANSFER_MSG_STATUS:
 			{
-				ofLog(OF_LOG_NOTICE, "WIA_TRANSFER_MSG_STATUS - %ld%% complete", pWiaTransferParams->lPercentComplete);
+				ev.status = StreamStatus::Running;
+				ev.size = (int)pWiaTransferParams->ulTransferredBytes;
+				ev.progress = (int)pWiaTransferParams->lPercentComplete;
 			}
 			break;
 		case WIA_TRANSFER_MSG_END_OF_STREAM:
 			{
-				ofLog(OF_LOG_NOTICE, "WIA_TRANSFER_MSG_END_OF_STREAM");
+				ev.status = StreamStatus::EndOfStream;
 			}
 			break;
 		case WIA_TRANSFER_MSG_END_OF_TRANSFER:
 			{
-				ofLog(OF_LOG_NOTICE, "WIA_TRANSFER_MSG_END_OF_TRANSFER");
-				ofLog(OF_LOG_NOTICE, "Image Transferred to file %ws", m_szFileName);
+				ev.status = StreamStatus::Finished;
 			}
 			break;
 		default:
 			break;
 	}
+
+	if (m_eventCb)
+		m_eventCb(ev);
+
 	return hr;
 }
 

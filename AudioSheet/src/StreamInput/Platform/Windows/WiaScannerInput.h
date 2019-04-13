@@ -42,6 +42,7 @@ private:
 	IWiaDevMgr2* pWiaDevMgr;
 	IWiaItem2 *pWiaRootItem2; // device
 private:
+	void HandleEventsFromTransferCb(const StreamEventBase& ev);
 	HRESULT CreateWiaDeviceManager(IWiaDevMgr2 **ppWiaDevMgr);
 	HRESULT CreateWiaDevice(IWiaDevMgr2 *pWiaDevMgr, BSTR bstrDeviceID, IWiaItem2 **ppWiaDevice);
 	HRESULT EnumerateDevices(IWiaDevMgr2 *pWiaDevMgr);
