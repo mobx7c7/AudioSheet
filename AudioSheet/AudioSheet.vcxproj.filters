@@ -28,6 +28,15 @@
     <ClCompile Include="src\StreamInput\Platform\Windows\WiaCommon.cpp">
       <Filter>src\StreamInput\Platform\Windows</Filter>
     </ClCompile>
+    <ClCompile Include="src\StreamInput\Platform\Windows\CWiaDataCallback.cpp">
+      <Filter>src\StreamInput\Platform\Windows</Filter>
+    </ClCompile>
+    <ClCompile Include="src\StreamInput\Platform\Windows\BitmapUtil.cpp">
+      <Filter>src\StreamInput\Platform\Windows</Filter>
+    </ClCompile>
+    <ClCompile Include="src\StreamInput\Platform\Windows\WiaScannerInput2.cpp">
+      <Filter>src\StreamInput\Platform\Windows</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="src">
@@ -74,8 +83,20 @@
     <ClInclude Include="src\StreamEvent.h">
       <Filter>src</Filter>
     </ClInclude>
+    <ClInclude Include="src\StreamInput\Platform\Windows\CWiaDataCallback.h">
+      <Filter>src\StreamInput\Platform\Windows</Filter>
+    </ClInclude>
+    <ClInclude Include="src\StreamInput\Platform\Windows\BitmapUtil.h">
+      <Filter>src\StreamInput\Platform\Windows</Filter>
+    </ClInclude>
+    <ClInclude Include="src\StreamInput\Platform\Windows\WiaScannerInput2.h">
+      <Filter>src\StreamInput\Platform\Windows</Filter>
+    </ClInclude>
     <ClInclude Include="src\StreamInput\ScannerInput.h">
       <Filter>src\StreamInput</Filter>
+    </ClInclude>
+    <ClInclude Include="src\StreamInput\Platform\Windows\CComPtrArray.h">
+      <Filter>src\StreamInput\Platform\Windows</Filter>
     </ClInclude>
     <ClInclude Include="src\StreamInput\ScannerInputEvent.h">
       <Filter>src\StreamInput</Filter>
