@@ -201,6 +201,7 @@
     <ClInclude Include="src\StreamInput\Platform\Windows\WiaCommon.h" />
     <ClInclude Include="src\StreamInput\Platform\Windows\WiaScannerInput.h" />
     <ClInclude Include="src\StreamInput\ScannerInput.h" />
+    <ClInclude Include="src\StreamInput\ScannerInputEvent.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="$(OF_ROOT)\libs\openFrameworksCompiled\project\vs\openframeworksLib.vcxproj">
