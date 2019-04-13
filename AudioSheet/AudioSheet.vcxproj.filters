@@ -37,6 +37,7 @@
     <ClCompile Include="src\StreamInput\Platform\Windows\WiaScannerInput2.cpp">
       <Filter>src\StreamInput\Platform\Windows</Filter>
     </ClCompile>
+    <ClCompile Include="src\DeviceImageReader.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="src">
@@ -97,6 +98,9 @@
     </ClInclude>
     <ClInclude Include="src\StreamInput\Platform\Windows\CComPtrArray.h">
       <Filter>src\StreamInput\Platform\Windows</Filter>
+    </ClInclude>
+    <ClInclude Include="src\DeviceImageReader.h">
+      <Filter>src</Filter>
     </ClInclude>
     <ClInclude Include="src\StreamInput\ScannerInputEvent.h">
       <Filter>src\StreamInput</Filter>
