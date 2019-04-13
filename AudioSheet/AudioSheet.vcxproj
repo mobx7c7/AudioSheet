@@ -194,6 +194,7 @@
     <ClInclude Include="src\ClockPattern.h" />
     <ClInclude Include="src\ofApp.h" />
     <ClInclude Include="src\SheetCanvas.h" />
+    <ClInclude Include="src\StreamEvent.h" />
     <ClInclude Include="src\StreamInput.h" />
     <ClInclude Include="src\SheetStream.h" />
     <ClInclude Include="src\StreamInput\Platform\Windows\CWiaTransferCallback.h" />
