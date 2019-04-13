@@ -116,6 +116,67 @@ HRESULT ReadPropertyLong(IWiaItem2* pWiaItem2, PROPID propid, LONG* lVal)
 	return hr;
 }
 
+HRESULT ReadPropertyLong(IWiaPropertyStorage * pWiaPropertyStorage, const PROPSPEC * pPropSpec, LONG * plResult)
+{
+	PROPVARIANT PropVariant;
+
+	HRESULT hr = pWiaPropertyStorage->ReadMultiple(1,pPropSpec,&PropVariant);
+
+	// Generally, the return value should be checked against S_FALSE.
+	// If ReadMultiple returns S_FALSE, it means the property name or ID
+	// had valid syntax, but it didn't exist in this property set, so
+	// no properties were retrieved, and each PROPVARIANT structure is set 
+	// to VT_EMPTY. But the following switch statement will handle this case
+	// and return E_FAIL. So the caller of ReadPropertyLong does not need
+	// to check for S_FALSE explicitly.
+
+	if (SUCCEEDED(hr))
+	{
+		hr = S_OK;
+
+		switch (PropVariant.vt)
+		{
+			case VT_I1:
+				*plResult = (LONG)PropVariant.cVal;
+				break;
+			case VT_UI1:
+				*plResult = (LONG)PropVariant.bVal;
+				break;
+			case VT_I2:
+				*plResult = (LONG)PropVariant.iVal;
+				break;
+			case VT_UI2:
+				*plResult = (LONG)PropVariant.uiVal;
+				break;
+			case VT_I4:
+				*plResult = (LONG)PropVariant.lVal;
+				break;
+			case VT_UI4:
+				*plResult = (LONG)PropVariant.ulVal;
+				break;
+			case VT_INT:
+				*plResult = (LONG)PropVariant.intVal;
+				break;
+			case VT_UINT:
+				*plResult = (LONG)PropVariant.uintVal;
+				break;
+			case VT_R4:
+				*plResult = (LONG)(PropVariant.fltVal + 0.5);
+				break;
+			case VT_R8:
+				*plResult = (LONG)(PropVariant.dblVal + 0.5);
+				break;
+			default:
+				hr = E_FAIL;
+				break;
+		}
+	}
+
+	PropVariantClear(&PropVariant);
+
+	return hr;
+}
+
 HRESULT ReadPropertyGuid(IWiaItem2* pWiaItem2, PROPID propid, GUID* pguid_val)
 {
 	if (!pWiaItem2)
@@ -172,6 +233,53 @@ HRESULT ReadPropertyGuid(IWiaItem2* pWiaItem2, PROPID propid, GUID* pguid_val)
 	return hr;
 }
 
+HRESULT ReadPropertyGuid(IWiaPropertyStorage * pWiaPropertyStorage, const PROPSPEC * pPropSpec, GUID * pguidResult)
+{
+	PROPVARIANT PropVariant;
+
+	HRESULT hr = pWiaPropertyStorage->ReadMultiple(1,pPropSpec,&PropVariant);
+
+	// Generally, the return value should be checked against S_FALSE.
+	// If ReadMultiple returns S_FALSE, it means the property name or ID
+	// had valid syntax, but it didn't exist in this property set, so
+	// no properties were retrieved, and each PROPVARIANT structure is set 
+	// to VT_EMPTY. But the following switch statement will handle this case
+	// and return E_FAIL. So the caller of ReadPropertyGuid does not need
+	// to check for S_FALSE explicitly.
+
+	if (SUCCEEDED(hr))
+	{
+		hr = S_OK;
+		switch (PropVariant.vt)
+		{
+			case VT_CLSID:
+				*pguidResult = *PropVariant.puuid;
+				break;
+			case VT_BSTR:
+				hr = CLSIDFromString(PropVariant.bstrVal, pguidResult);
+				break;
+			case VT_LPWSTR:
+				hr = CLSIDFromString(PropVariant.pwszVal, pguidResult);
+				break;
+			case VT_LPSTR:
+			{
+				WCHAR wszGuid[MAX_GUID_STRING_LEN];
+				size_t *pConvertedChars = NULL;
+				mbstowcs_s(pConvertedChars, wszGuid, COUNTOF(wszGuid) - 1, PropVariant.pszVal, MAX_GUID_STRING_LEN);
+				wszGuid[MAX_GUID_STRING_LEN - 1] = L'\0';
+				hr = CLSIDFromString(wszGuid, pguidResult);
+				break;
+			}
+			default:
+				hr = E_FAIL;
+				break;
+		}
+	}
+
+	PropVariantClear(&PropVariant);
+
+	return hr;
+}
 
 HRESULT WritePropertyGuid(IWiaPropertyStorage* pWiaPropertyStorage, PROPID propid, GUID guid)
 {
