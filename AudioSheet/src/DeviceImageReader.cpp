@@ -78,6 +78,36 @@ void DeviceImageReader::onDeviceEvent(const StreamEventBase& eventBase)
 	}
 }
 
+void DeviceImageReader::readPixelData(PBITMAPINFOHEADER pHeader, std::vector<uint8_t> &obuf)
+{
+	// Calculating Surface Stride
+	// Source: BITMAPINFOHEADER structure page at Windows API Reference.
+	int stride = (((pHeader->biWidth * pHeader->biBitCount) + 31) & ~31) >> 3;
+	int bytesPerLine = pHeader->biWidth * pHeader->biBitCount / 8;
+
+	// Color table: 2^n indices, 4 bytes per index
+	int colorTableSize = pHeader->biClrUsed * 4;
+
+	auto beg = receiveBuffer.begin();
+	auto end = receiveBuffer.end();
+
+	beg += sizeof(BITMAPINFOHEADER);
+	beg += colorTableSize;
+
+	if (stride == bytesPerLine)
+	{
+		std::copy(beg, end, std::back_inserter(obuf));
+	}
+	else
+	{
+		while (beg < end)
+		{
+			std::copy(beg, beg + bytesPerLine, std::back_inserter(obuf));
+			beg += stride;
+		}
+	}
+}
+
 void DeviceImageReader::allocateTextureFromBMP()
 {
 	PBITMAPINFOHEADER pHeader = reinterpret_cast<PBITMAPINFOHEADER>(receiveBuffer.data());
@@ -88,9 +118,12 @@ void DeviceImageReader::allocateTextureFromBMP()
 	bool isTopDown = pHeader->biHeight < 0;
 	int height = isTopDown ? ~pHeader->biHeight : pHeader->biHeight;
 	int format = pHeader->biBitCount == 8 ? GL_RED : GL_BGR;
-	int dataOffset = sizeof(BITMAPINFOHEADER);
+
+	std::vector<uint8_t> pixelBuffer;
+	readPixelData(pHeader, pixelBuffer);
+
 	imageTexture.allocate(width, height, GL_RGBA, format, GL_UNSIGNED_BYTE);
-	imageTexture.loadData(&receiveBuffer[dataOffset], width, height, format);
+	imageTexture.loadData(pixelBuffer.data(), width, height, format);
 	imageTexture.setTextureMinMagFilter(GL_LINEAR, GL_NEAREST);
 }
 

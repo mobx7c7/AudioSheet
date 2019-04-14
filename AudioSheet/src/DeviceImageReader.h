@@ -16,6 +16,7 @@ private:
 		imageTexture;
 private:
 	void onDeviceEvent(const StreamEventBase& eventBase);
+	void readPixelData(PBITMAPINFOHEADER pHeader, std::vector<uint8_t> &obuf);
 	void allocateTextureFromBMP();
 public:
 	void setup();
