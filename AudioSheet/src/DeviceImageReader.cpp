@@ -111,20 +111,41 @@ void DeviceImageReader::readPixelData(PBITMAPINFOHEADER pHeader, std::vector<uin
 void DeviceImageReader::allocateTextureFromBMP()
 {
 	PBITMAPINFOHEADER pHeader = reinterpret_cast<PBITMAPINFOHEADER>(receiveBuffer.data());
-	int width = pHeader->biWidth;
-	//If biHeight...
-	//- positive: bitmap is a bottom - up DIB and its origin is the lower - left corner.
-	//- negative: bitmap is a top - down DIB and its origin is the upper - left corner.
-	bool isTopDown = pHeader->biHeight < 0;
-	int height = isTopDown ? ~pHeader->biHeight : pHeader->biHeight;
-	int format = pHeader->biBitCount == 8 ? GL_RED : GL_BGR;
 
-	std::vector<uint8_t> pixelBuffer;
-	readPixelData(pHeader, pixelBuffer);
+	if (pHeader->biCompression == BI_RGB)
+	{
+		// If biHeight...
+		// - positive: bitmap is a bottom - up DIB and its origin is the lower - left corner.
+		// - negative: bitmap is a top - down DIB and its origin is the upper - left corner.
+		// Source: BITMAPINFOHEADER structure page @ Windows API Reference.
 
-	imageTexture.allocate(width, height, GL_RGBA, format, GL_UNSIGNED_BYTE);
-	imageTexture.loadData(pixelBuffer.data(), width, height, format);
-	imageTexture.setTextureMinMagFilter(GL_LINEAR, GL_NEAREST);
+		bool isTopDown = pHeader->biHeight < 0;
+		int width = pHeader->biWidth;
+		int height = isTopDown ? ~pHeader->biHeight : pHeader->biHeight;
+		int format = 0, type = 0;
+
+		switch (pHeader->biBitCount)
+		{
+			case 8: // Grayscale
+				format = GL_RED;
+				type = GL_UNSIGNED_BYTE;
+				break;
+			case 24: // RGB24, RGB888
+				format = GL_BGR;
+				type = GL_UNSIGNED_BYTE;
+				break;
+		}
+
+		if (format && type)
+		{
+			std::vector<uint8_t> pixelBuffer;
+			readPixelData(pHeader, pixelBuffer);
+
+			imageTexture.allocate(width, height, GL_RGB, format, type);
+			imageTexture.loadData(pixelBuffer.data(), width, height, format);
+			imageTexture.setTextureMinMagFilter(GL_LINEAR, GL_NEAREST);
+		}
+	}
 }
 
 void DeviceImageReader::draw(float x, float y, float w, float h) const
