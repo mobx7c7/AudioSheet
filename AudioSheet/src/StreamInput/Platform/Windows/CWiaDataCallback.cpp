@@ -38,16 +38,11 @@ std::ostream& operator<<(std::ostream& os, const PBITMAPINFOHEADER &pHeader)
 		<< "ClrImportant=" << pHeader->biClrImportant << ")";
 }
 
-CWiaDataCallback::CWiaDataCallback(StreamEventCb fnEventCallback, PVOID pProgressCallbackParam, LONG * plCount, IStream *** pppStream)
+CWiaDataCallback::CWiaDataCallback(StreamEventCb fnEventCallback)
 {
 	m_cRef = 0;
 	m_bBMP = FALSE;
-	m_nHeaderSize = 0;
-	m_nDataSize = 0;
 	m_fnEventCallback = fnEventCallback;
-	m_pProgressCallbackParam = pProgressCallbackParam;
-	m_plCount = plCount;
-	m_pppStream = pppStream;
 }
 
 HRESULT __stdcall CWiaDataCallback::QueryInterface(REFIID riid, void ** ppvObject)
@@ -93,100 +88,6 @@ ULONG __stdcall CWiaDataCallback::Release(void)
 	return cRef;
 }
 
-HRESULT CWiaDataCallback::ReAllocBuffer(ULONG nSize)
-{
-	HRESULT hr;
-
-	// If m_pStream is not initialized yet, create a new stream object
-
-	if (m_pStream == 0)
-	{
-		hr = CreateStreamOnHGlobal(0, TRUE, &m_pStream);
-
-		if (FAILED(hr))
-		{
-			return hr;
-		}
-	}
-
-	// Next, set the size of the stream object
-
-	ULARGE_INTEGER liSize = { nSize };
-
-	hr = m_pStream->SetSize(liSize);
-
-	if (FAILED(hr))
-	{
-		return hr;
-	}
-
-	m_nDataSize = nSize;
-
-	return S_OK;
-}
-
-HRESULT CWiaDataCallback::CopyToBuffer(ULONG nOffset, LPCVOID pBuffer, ULONG nSize)
-{
-	HRESULT hr;
-
-	// First move the stream pointer to the data offset
-
-	LARGE_INTEGER liOffset = { nOffset };
-
-	hr = m_pStream->Seek(liOffset, STREAM_SEEK_SET, 0);
-
-	if (FAILED(hr))
-	{
-		return hr;
-	}
-
-	// Next, write the new data to the stream
-
-	hr = m_pStream->Write(pBuffer, nSize, 0);
-
-	if (FAILED(hr))
-	{
-		return hr;
-	}
-
-	return S_OK;
-}
-
-HRESULT CWiaDataCallback::StoreBuffer()
-{
-	// Increase the successfully transferred buffers array size
-
-	IStream **ppStream = (IStream **)CoTaskMemRealloc(*m_pppStream,(*m_plCount + 1) * sizeof(IStream*));
-
-	if (ppStream == NULL)
-	{
-		return E_OUTOFMEMORY;
-	}
-
-	*m_pppStream = ppStream;
-
-	// Rewind the current buffer
-
-	LARGE_INTEGER liZero = { 0 };
-
-	m_pStream->Seek(liZero, STREAM_SEEK_SET, 0);
-
-	// Store the current buffer as the last successfully transferred buffer
-
-	(*m_pppStream)[*m_plCount] = m_pStream;
-	(*m_pppStream)[*m_plCount]->AddRef();
-
-	*m_plCount += 1;
-
-	// Reset the current buffer
-
-	m_pStream.Release();
-
-	m_nDataSize = 0;
-
-	return S_OK;
-}
-
 HRESULT CWiaDataCallback::HandleStatus(LONG lStatus, LONG lPercentComplete)
 {
 	switch (lStatus)
@@ -213,23 +114,9 @@ HRESULT CWiaDataCallback::HandleHeader(PBYTE pbBuffer)
 
 	PWIA_DATA_CALLBACK_HEADER pHeader = (PWIA_DATA_CALLBACK_HEADER)pbBuffer;
 
-	//ofLogNotice() << pHeader;
-	
 	// Determine if this is a BMP transfer
 
 	m_bBMP = pHeader->guidFormatID == WiaImgFmt_MEMORYBMP || pHeader->guidFormatID == WiaImgFmt_BMP;
-
-	// For WiaImgFmt_MEMORYBMP transfers, WIA does not send a BITMAPFILEHEADER before the data.
-	// In this program, we desire all BMP files to contain a BITMAPFILEHEADER, so add it manually
-
-	m_nHeaderSize = pHeader->guidFormatID == WiaImgFmt_MEMORYBMP ? sizeof(BITMAPFILEHEADER) : 0;
-
-	// Allocate memory for the image if the size is given in the header
-
-	if (pHeader != NULL && pHeader->lBufferSize != 0)
-	{
-		hr = ReAllocBuffer(m_nHeaderSize + pHeader->lBufferSize);
-	}
 
 	return hr;
 }
@@ -238,133 +125,31 @@ HRESULT CWiaDataCallback::HandleData(LONG lStatus, LONG lPercentComplete, LONG l
 {
 	// Invoke the callback function
 
-	HRESULT hr = HandleStatus(lStatus, lPercentComplete);
-
-	if (FAILED(hr) || hr == S_FALSE)
-	{
-		return hr;
-	}
-
-	// If the buffer is not allocated yet and this is the first block, 
-	// and the transferred image is in BMP format, allocate the buffer
-	// according to the size information in the bitmap header
-
-	if (m_pStream == NULL && lOffset == 0 && m_bBMP)
-	{
-		LONG nBufferSize = BitmapUtil::GetBitmapSize(pbBuffer);
-
-		if (nBufferSize != 0)
-		{
-			hr = ReAllocBuffer(m_nHeaderSize + nBufferSize);
-
-			if (FAILED(hr))
-			{
-				return hr;
-			}
-		}
-	}
-
-	// If the transfer goes past the buffer, try to expand it
-
-	if (m_nHeaderSize + lOffset + lLength > m_nDataSize)
-	{
-		hr = ReAllocBuffer(m_nHeaderSize + lOffset + lLength);
-
-		if (FAILED(hr))
-		{
-			return hr;
-		}
-	}
-
-	// copy the transfer buffer
-
-	hr = CopyToBuffer(m_nHeaderSize + lOffset, pbBuffer, lLength);
-
-	if (FAILED(hr))
-	{
-		return hr;
-	}
-
 	ScannerInputEvent inputEvent;
 	std::memset(&inputEvent, 0, sizeof(inputEvent));
-	inputEvent.status	= StreamStatus::Running;
-	inputEvent.data		= reinterpret_cast<char*>(pbBuffer);
-	inputEvent.size		= static_cast<size_t>(lLength);
-	inputEvent.offset	= static_cast<int>(lOffset);
-	inputEvent.page		= static_cast<int>(*m_plCount);
-	inputEvent.progress	= static_cast<int>(lPercentComplete);
+	inputEvent.status = StreamStatus::Running;
+	inputEvent.data = reinterpret_cast<char*>(pbBuffer);
+	inputEvent.size = static_cast<size_t>(lLength);
+	inputEvent.offset = static_cast<int>(lOffset);
+	inputEvent.page = static_cast<int>(m_lCount);
+	inputEvent.progress = static_cast<int>(lPercentComplete);
 	m_fnEventCallback(inputEvent);
 
-	return hr;
+	return S_OK;
 }
 
 HRESULT CWiaDataCallback::HandleNewPage()
 {
 	HRESULT hr  S_OK;
 
-	if (m_pStream != NULL)
-	{
-		// For BMP files, we should validate the the image header
-		// So, obtain the memory buffer from the stream
+	ScannerInputEvent inputEvent;
+	std::memset(&inputEvent, 0, sizeof(inputEvent));
+	inputEvent.status = StreamStatus::Finished;
+	inputEvent.page = static_cast<int>(m_lCount);
+	inputEvent.progress = 100;
+	m_fnEventCallback(inputEvent);
 
-		if (m_bBMP)
-		{
-			// Since the stream is created using CreateStreamOnHGlobal,
-			// we can get the memory buffer with GetHGlobalFromStream.
-
-			HGLOBAL hBuffer;
-
-			hr = GetHGlobalFromStream(m_pStream, &hBuffer);
-
-			if (FAILED(hr))
-			{
-				return hr;
-			}
-
-			PBITMAPFILEHEADER pFileHeader = (PBITMAPFILEHEADER)GlobalLock(hBuffer);
-			PBITMAPINFOHEADER pInfoHeader = (PBITMAPINFOHEADER)(pFileHeader + 1);
-
-			if (pFileHeader == NULL)
-			{
-				return HRESULT_FROM_WIN32(GetLastError());
-			}
-
-			// Some scroll-fed scanners may return 0 as the bitmap height
-			// In this case, calculate the image height and modify the header
-
-			BitmapUtil::FixBitmapHeight(pInfoHeader, m_nDataSize, TRUE);
-
-			// For WiaImgFmt_MEMORYBMP transfers, the WIA service does not 
-			// include a BITMAPFILEHEADER preceeding the bitmap data. 
-			// In this case, fill in the BITMAPFILEHEADER structure.
-
-			if (m_nHeaderSize != 0)
-			{
-				BitmapUtil::FillBitmapFileHeader(pInfoHeader, pFileHeader);
-			}
-
-			//ofLogNotice() << pFileHeader;
-			//ofLogNotice() << pInfoHeader;
-
-			GlobalUnlock(hBuffer);
-		}
-
-		ScannerInputEvent inputEvent;
-		std::memset(&inputEvent, 0, sizeof(inputEvent));
-		inputEvent.status	= StreamStatus::Finished;
-		inputEvent.page		= static_cast<int>(*m_plCount);
-		inputEvent.progress = 100;
-		m_fnEventCallback(inputEvent);
-
-		// Store this buffer in the successfully transferred images array
-
-		hr = StoreBuffer();
-
-		if (FAILED(hr))
-		{
-			return hr;
-		}
-	}
+	m_lCount++;
 
 	return hr;
 }
@@ -396,11 +181,6 @@ HRESULT __stdcall CWiaDataCallback::BandedDataCallback(
 		case IT_MSG_NEW_PAGE:
 			hr = HandleNewPage();
 			break;
-	}
-
-	if (FAILED(hr) || hr == S_FALSE)
-	{
-		//TODO: Mensagem
 	}
 
 	return hr;

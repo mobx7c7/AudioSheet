@@ -20,9 +20,7 @@ private:
 		LONG lIntent,
 		IWiaDevMgr *pSuppliedWiaDevMgr,
 		IWiaItem *pSuppliedItemRoot,
-		GUID *pguidFormat,
-		LONG *plCount,
-		IStream ***pppStream);
+		GUID *pguidFormat);
 public:
 	WiaScannerInput2();
 	~WiaScannerInput2();

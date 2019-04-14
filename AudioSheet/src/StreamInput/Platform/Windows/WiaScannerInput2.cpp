@@ -17,22 +17,10 @@ HRESULT WiaScannerInput2::GetImage(
 	LONG                 lIntent,
 	IWiaDevMgr          *pSuppliedWiaDevMgr,
 	IWiaItem            *pSuppliedItemRoot,
-	GUID                *pguidFormat,
-	LONG                *plCount,
-	IStream             ***pppStream
+	GUID                *pguidFormat
 )
 {
 	HRESULT hr;
-
-	// Validate and initialize output parameters
-
-	if (plCount == NULL || pppStream == NULL)
-	{
-		return E_POINTER;
-	}
-
-	*plCount = 0;
-	*pppStream = NULL;
 
 	// Initialize the local root item variable with the supplied value.
 	// If no value is supplied, display the device selection common dialog.
@@ -135,7 +123,7 @@ HRESULT WiaScannerInput2::GetImage(
 
 	// Create the data callback interface
 	auto eventFunc = std::bind(&WiaScannerInput2::RedirectEvent, this, std::placeholders::_1);
-	CComPtr<CWiaDataCallback> pDataCallback = new CWiaDataCallback(eventFunc, this, plCount, pppStream);
+	CComPtr<CWiaDataCallback> pDataCallback = new CWiaDataCallback(eventFunc);
 
 	if (pDataCallback == NULL)
 	{
@@ -284,7 +272,6 @@ void WiaScannerInput2::read()
 
 	HRESULT hr;
 
-	CComPtrArray<IStream> ppStream;
 
 	hr = GetImage(hWndParent,
 				  StiDeviceTypeDefault,

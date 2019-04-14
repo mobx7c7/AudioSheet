@@ -11,19 +11,8 @@ private:
 
 	LONG m_cRef;
 	BOOL m_bBMP;
-	LONG m_nHeaderSize;
-	LONG m_nDataSize;
-	CComPtr<IStream>  m_pStream;
 	StreamEventCb  m_fnEventCallback;
-	PVOID m_pProgressCallbackParam;
-	LONG *m_plCount;
-	IStream ***m_pppStream;
-
-private:
-
-	HRESULT ReAllocBuffer(ULONG nBufferSize);
-	HRESULT CopyToBuffer(ULONG nOffset, LPCVOID pBuffer, ULONG nSize);
-	HRESULT StoreBuffer();
+	LONG m_lCount;
 
 private:
 
@@ -34,12 +23,7 @@ private:
 
 public:
 
-	CWiaDataCallback(
-		StreamEventCb		pfnProgressCallback,
-		PVOID                pProgressCallbackParam,
-		LONG                *plCount,
-		IStream             ***pppStream
-	);
+	CWiaDataCallback(StreamEventCb pfnProgressCallback);
 
 	HRESULT __stdcall
 		QueryInterface(
