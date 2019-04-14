@@ -1,6 +1,7 @@
 #include "DeviceImageReader.h"
 #include <ofGraphics.h>
 #include <ofLog.h>
+#include <ofEvents.h>
 #include "StreamInput/Platform/Windows/WiaScannerInput.h"
 #include "StreamInput/Platform/Windows/WiaScannerInput2.h"
 
@@ -23,6 +24,7 @@ ofLog& operator<<(ofLog& logger, PBITMAPINFOHEADER header)
 
 void DeviceImageReader::setup()
 {
+	magFbo.allocate(256, 256, GL_RGBA);
 	try
 	{
 		scannerInput = std::make_shared<WiaScannerInput2>();
@@ -157,17 +159,40 @@ void DeviceImageReader::draw(const ofRectangle & rect) const
 {
 	if (imageTexture.isAllocated())
 	{
-		auto imageRect = rect;
-		imageRect.setSize(imageTexture.getWidth(), imageTexture.getHeight());
+		glm::vec3 mousePosition(ofGetMouseX(), ofGetMouseY(),0.0f);
 
-		auto imageMinRect = imageRect;
-		imageMinRect.scale(0.175f);
-		imageTexture.draw(imageMinRect);
+		glm::vec3 mouseOffset(20, 20, 0);
 
-		auto imageMagRect = imageRect;
-		imageMagRect.position = imageMinRect.getTopRight() + glm::vec3(10, 0, 0);
-		imageMagRect.scale(2.0f);
-		imageTexture.draw(imageMagRect);
+		ofRectangle imageRect(rect.getPosition(), imageTexture.getWidth(), imageTexture.getHeight());
+
+		ofRectangle magDrawRect(mousePosition + mouseOffset, magFbo.getWidth(), magFbo.getHeight());
+
+		float magScale = 8.0f;
+
+		magFbo.begin(true);
+		{
+			ofClear(ofColor::black);
+			auto imageMagRect = imageRect;
+
+			ofRectangle magViewRect(glm::vec2(), magDrawRect.getWidth(), magDrawRect.getHeight());
+			magViewRect.setPosition(-magViewRect.getCenter());
+
+			imageMagRect.scale(magScale);
+			imageMagRect.setPosition((-mousePosition * magScale) - magViewRect.getPosition());
+			imageTexture.draw(imageMagRect);
+		}
+		magFbo.end();
+
+		imageTexture.draw(imageRect);
+		magFbo.draw(magDrawRect);
+
+		ofPushStyle();
+		ofStyle style;
+		style.bFill = false;
+		style.color = ofColor::black;
+		ofSetStyle(style);
+		ofDrawRectangle(magDrawRect);
+		ofPopStyle();
 	}
 }
 

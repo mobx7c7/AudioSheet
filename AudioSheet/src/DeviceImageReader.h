@@ -1,6 +1,7 @@
 #pragma once
 #include <ofGraphicsBaseTypes.h>
 #include <ofTexture.h>
+#include <ofFbo.h>
 #include <memory>
 #include <vector>
 #include "StreamInput.h"
@@ -14,6 +15,8 @@ private:
 		receiveBuffer;
 	ofTexture
 		imageTexture;
+	ofFbo
+		magFbo;
 private:
 	void onDeviceEvent(const StreamEventBase& eventBase);
 	void readPixelData(PBITMAPINFOHEADER pHeader, std::vector<uint8_t> &obuf);
