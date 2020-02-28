@@ -7,28 +7,31 @@
 
 ofLog& operator<<(ofLog& logger, PBITMAPINFOHEADER header)
 {
-	return logger 
-	<< "BITMAPINFOHEADER" << std::endl
-	<< "Size:" << header->biSize << std::endl
-	<< "Width:" << header->biWidth << std::endl
-	<< "Height:" << header->biHeight << std::endl
-	<< "Planes:" << header->biPlanes << std::endl
-	<< "BitCount:" << header->biBitCount << std::endl
-	<< "Compression:" << header->biCompression << std::endl
-	<< "SizeImage:" << header->biSizeImage << std::endl
-	<< "XPelsPerMeter:" << header->biXPelsPerMeter << std::endl
-	<< "YPelsPerMeter:" << header->biYPelsPerMeter << std::endl
-	<< "ClrUsed:" << header->biClrUsed << std::endl
-	<< "ClrImportant:" << header->biClrImportant;
+	return logger
+		<< "BITMAPINFOHEADER" << std::endl
+		<< "{"
+		<< "\tSize:" << header->biSize << std::endl
+		<< "\tWidth:" << header->biWidth << std::endl
+		<< "\tHeight:" << header->biHeight << std::endl
+		<< "\tPlanes:" << header->biPlanes << std::endl
+		<< "\tBitCount:" << header->biBitCount << std::endl
+		<< "\tCompression:" << header->biCompression << std::endl
+		<< "\tSizeImage:" << header->biSizeImage << std::endl
+		<< "\tXPelsPerMeter:" << header->biXPelsPerMeter << std::endl
+		<< "\tYPelsPerMeter:" << header->biYPelsPerMeter << std::endl
+		<< "\tClrUsed:" << header->biClrUsed << std::endl
+		<< "\tClrImportant:" << header->biClrImportant << std::endl
+		<< "}";
 }
 
 void DeviceImageReader::setup()
 {
 	magFbo.allocate(256, 256, GL_RGBA);
+
 	try
 	{
 		scannerInput = std::make_shared<WiaScannerInput2>();
-		scannerInput->setEventCallback(std::bind(&DeviceImageReader::onDeviceEvent, this, std::placeholders::_1));
+		scannerInput->setCallback(std::bind(&DeviceImageReader::onDeviceEvent, this, std::placeholders::_1));
 	}
 	catch (const std::exception& e)
 	{
@@ -62,7 +65,7 @@ void DeviceImageReader::onDeviceEvent(const StreamEventBase& eventBase)
 	switch (inputEvent.status)
 	{
 		case StreamStatus::Running:
-			std::copy(inputEvent.data, inputEvent.data + inputEvent.size, std::back_inserter(receiveBuffer));
+			std::copy_n(inputEvent.data, inputEvent.size, std::back_inserter(receiveBuffer));
 			if (inputEvent.offset == 0 && receiveBuffer.size() >= sizeof(BITMAPINFOHEADER))
 				logger << reinterpret_cast<PBITMAPINFOHEADER>(receiveBuffer.data());
 			else
@@ -80,33 +83,68 @@ void DeviceImageReader::onDeviceEvent(const StreamEventBase& eventBase)
 	}
 }
 
+void DeviceImageReader::unpackPixelData(PBITMAPINFOHEADER pHeader, int stride, ReceiveBuffer &buf, ReceiveBuffer::iterator beg)
+{
+	std::vector<uint8_t> unpacked(pHeader->biWidth);
+
+	const int plen = 8 / pHeader->biBitCount;
+	const int pval = 256 / pHeader->biBitCount - 1;
+	const int mask = pHeader->biBitCount;
+	int x, nextByte, nextShift;
+
+	auto end = buf.end();
+
+	while (beg < end)
+	{
+		for (x = 0; x < pHeader->biWidth; x++)
+		{
+			nextByte = x / plen;
+			nextShift = 7 - (x % plen) * pHeader->biBitCount;
+			unpacked[x] = ((beg[nextByte] >> nextShift) & mask) * pval;
+		}
+		std::copy(unpacked.begin(), unpacked.end(), std::back_inserter(buf));
+		
+		beg += stride;
+	}
+}
+
 void DeviceImageReader::readPixelData(PBITMAPINFOHEADER pHeader, std::vector<uint8_t> &obuf)
 {
 	// Calculating Surface Stride
-	// Source: BITMAPINFOHEADER structure page at Windows API Reference.
+	// Source: BITMAPINFOHEADER structure page @ Windows API Reference.
 	int stride = (((pHeader->biWidth * pHeader->biBitCount) + 31) & ~31) >> 3;
-	int bytesPerLine = pHeader->biWidth * pHeader->biBitCount / 8;
+	//int bytesPerLine = pHeader->biBitCount < 8 ? stride : pHeader->biWidth * (pHeader->biBitCount / 8);
 
 	// Color table: 2^n indices, 4 bytes per index
 	int colorTableSize = pHeader->biClrUsed * 4;
 
 	auto beg = receiveBuffer.begin();
 	auto end = receiveBuffer.end();
-
 	beg += sizeof(BITMAPINFOHEADER);
 	beg += colorTableSize;
 
-	if (stride == bytesPerLine)
+	if (pHeader->biBitCount < 8)
 	{
-		std::copy(beg, end, std::back_inserter(obuf));
+		unpackPixelData(pHeader, stride, receiveBuffer, beg);
 	}
 	else
 	{
-		while (beg < end)
+		/*
+		if (stride != bytesPerLine)
 		{
-			std::copy(beg, beg + bytesPerLine, std::back_inserter(obuf));
-			beg += stride;
+			while (beg < end)
+			{
+				std::copy_n(beg, stride, std::back_inserter(obuf));
+				beg += stride;
+			}
 		}
+		else
+		{
+			std::copy(beg, end, std::back_inserter(obuf));
+		}
+		*/
+
+		std::copy(beg, end, std::back_inserter(obuf));
 	}
 }
 
@@ -124,28 +162,28 @@ void DeviceImageReader::allocateTextureFromBMP()
 		bool isTopDown = pHeader->biHeight < 0;
 		int width = pHeader->biWidth;
 		int height = isTopDown ? ~pHeader->biHeight : pHeader->biHeight;
-		int format = 0, type = 0;
+
+		ofImageType imageType = ofImageType::OF_IMAGE_UNDEFINED;
 
 		switch (pHeader->biBitCount)
 		{
+			case 1: // 1-bit
 			case 8: // Grayscale
-				format = GL_RED;
-				type = GL_UNSIGNED_BYTE;
+				imageType = OF_IMAGE_GRAYSCALE;
 				break;
 			case 24: // RGB24, RGB888
-				format = GL_BGR;
-				type = GL_UNSIGNED_BYTE;
+				imageType = OF_IMAGE_COLOR;
 				break;
 		}
 
-		if (format && type)
+		if (imageType != ofImageType::OF_IMAGE_UNDEFINED)
 		{
 			std::vector<uint8_t> pixelBuffer;
 			readPixelData(pHeader, pixelBuffer);
 
-			imageTexture.allocate(width, height, GL_RGB, format, type);
-			imageTexture.loadData(pixelBuffer.data(), width, height, format);
-			imageTexture.setTextureMinMagFilter(GL_LINEAR, GL_NEAREST);
+			imageBuffer.allocate(width, height, imageType);
+			imageBuffer.setFromPixels(pixelBuffer.data(), width, height, imageType, false);
+			imageBuffer.setUseTexture(true);
 		}
 	}
 }
@@ -157,13 +195,13 @@ void DeviceImageReader::draw(float x, float y, float w, float h) const
 
 void DeviceImageReader::draw(const ofRectangle & rect) const
 {
-	if (imageTexture.isAllocated())
+	if (imageBuffer.isAllocated())
 	{
-		glm::vec3 mousePosition(ofGetMouseX(), ofGetMouseY(),0.0f);
+		glm::vec3 mousePosition(ofGetMouseX(), ofGetMouseY(), 0.0f);
 
 		glm::vec3 mouseOffset(20, 20, 0);
 
-		ofRectangle imageRect(rect.getPosition(), imageTexture.getWidth(), imageTexture.getHeight());
+		ofRectangle imageRect(rect.getPosition(), imageBuffer.getWidth(), imageBuffer.getHeight());
 
 		ofRectangle magDrawRect(mousePosition + mouseOffset, magFbo.getWidth(), magFbo.getHeight());
 
@@ -179,11 +217,11 @@ void DeviceImageReader::draw(const ofRectangle & rect) const
 
 			imageMagRect.scale(magScale);
 			imageMagRect.setPosition((-mousePosition * magScale) - magViewRect.getPosition());
-			imageTexture.draw(imageMagRect);
+			imageBuffer.draw(imageMagRect);
 		}
 		magFbo.end();
 
-		imageTexture.draw(imageRect);
+		imageBuffer.draw(imageRect);
 		magFbo.draw(magDrawRect);
 
 		ofPushStyle();

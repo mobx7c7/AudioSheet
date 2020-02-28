@@ -10,9 +10,18 @@
 class WiaScannerInput2 : public ScannerInput
 {
 private:
-	IWiaDevMgr2* pWiaDevMgr;
+	std::vector<BSTR> devices;
+	IWiaDevMgr* pWiaDevMgr;
+	IWiaItem* pWiaItem;
+	DWORD readThreadId;
 private:
+	//DWORD WINAPI GetImageThread(LPVOID lpParam);
 	void RedirectEvent(const StreamEventBase&);
+	HRESULT CreateDeviceManager(IWiaDevMgr** ppWiaDevMgr);
+	HRESULT CreateDevice(IWiaDevMgr* pWiaDevMgr, BSTR bstrDeviceID, IWiaItem** ppWiaDevice);
+	HRESULT EnumerateDevices(IWiaDevMgr *pWiaDevMgr);
+	HRESULT EnumerateChildren(IWiaItem* pItemRoot, LONG* lCount, IWiaItem*** ppiWiaItem);
+	HRESULT AddDevice(IWiaPropertyStorage *pStorage);
 	HRESULT GetImage(
 		HWND hWndParent,
 		LONG lDeviceType,

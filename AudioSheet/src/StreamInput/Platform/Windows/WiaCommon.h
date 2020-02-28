@@ -51,3 +51,17 @@ void FindItemCategoryNameList(GUID lItemCategory, std::vector<std::string> &resu
 void PrintItemTypes(LONG lItemType);
 
 void PrintItemCategory(GUID lItemCategory);
+
+namespace std
+{
+	string to_string(const PROPVARIANT &var);
+}
+
+HRESULT EnumerateProperties(IWiaPropertyStorage* pPropertyStorage, std::vector<PROPID> &result);
+
+void PrintPropertiesAvailable(IWiaItem2* pItem);
+
+void PrintPropertiesAvailable(IWiaPropertyStorage* pPropertyStorage);
+
+void PrintProperties(IWiaPropertyStorage* pPropertyStorage, const std::vector<PROPID> &propSpec);
+

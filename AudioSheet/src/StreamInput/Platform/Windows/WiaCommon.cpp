@@ -517,3 +517,283 @@ void PrintItemCategory(GUID lItemCategory)
 		ofLogNotice() << "ItemCategory=" << name;
 	}
 }
+
+void PrintPropertiesAvailable(IWiaItem2* pItem)
+{
+	IWiaPropertyStorage* pWiaPropertyStorage = NULL;
+
+	HRESULT hr = pItem->QueryInterface(IID_IWiaPropertyStorage, (void**)&pWiaPropertyStorage);
+
+	if (SUCCEEDED(hr))
+	{
+		PrintPropertiesAvailable(pWiaPropertyStorage);
+	}
+	else
+	{
+		ReportError(TEXT("Failed in query interface"), hr);
+	}
+}
+
+
+
+
+/*
+std::string getTypeString(const VARTYPE type)
+{
+	switch (type)
+	{
+		case VT_EMPTY:
+			return "Nothing";
+		case VT_NULL:
+			return "SQL style Null";
+		case VT_I2:
+			return "2 byte signed int";
+		case VT_I4:
+			return "4 byte signed int";
+		case VT_R4:
+			return "4 byte real";
+		case VT_R8:
+			return "8 byte real";
+		case VT_CY:
+			return "Currency";
+		case VT_DATE:
+			return "Date";
+		case VT_BSTR:
+			return "OLE Automation string";
+		case VT_DISPATCH:
+			return "IDispatch *";
+		case VT_ERROR:
+			return "SCODE";
+		case VT_BOOL:
+			return "Boolean";
+		case VT_VARIANT:
+			return "VARIANT";
+		case VT_UNKNOWN:
+			return "IUnknown";
+		case VT_DECIMAL:
+			return "16 byte fixed point";
+		case VT_RECORD:
+			return "User defined type";
+		case VT_I1:
+			return "Signed char";
+		case VT_UI1:
+			return "Unsigned char";
+		case VT_UI2:
+			return "Unsigned short";
+		case VT_UI4:
+			return "Unsigned long";
+		case VT_I8:
+			return "Signed 64-bit int";
+		case VT_UI8:
+			return "Unsigned 64-bit int";
+		case VT_INT:
+			return "signed machine int";
+		case VT_UINT:
+			return "unsigned machine int";
+		case VT_INT_PTR:
+			return "signed machine register size width";
+		case VT_UINT_PTR:
+			return "unsigned machine register size width";
+		case VT_VOID:
+			return "C style void";
+		case VT_HRESULT:
+			return "Standard return type";
+		case VT_PTR:
+			return "Pointer type";
+		case VT_SAFEARRAY:
+			return "(use VT_ARRAY in VARIANT)";
+		case VT_CARRAY:
+			return "C style array";
+		case VT_USERDEFINED:
+			return "User defined type";
+		case VT_LPSTR:
+			return "Null terminated string";
+		case VT_LPWSTR:
+			return "Wide null terminated string";
+		case VT_FILETIME:
+			return "FILETIME";
+		case VT_BLOB:
+			return "Length prefixed bytes";
+		case VT_STREAM:
+			return "Name of the stream follows";
+		case VT_STORAGE:
+			return "Name of the storage follows";
+		case VT_STREAMED_OBJECT:
+			return "Stream contains an object";
+		case VT_STORED_OBJECT:
+			return "Storage contains an object";
+		case VT_VERSIONED_STREAM:
+			return "Stream with a GUID version";
+		case VT_BLOB_OBJECT:
+			return "Blob contains an object ";
+		case VT_CF:
+			return "Clipboard format";
+		case VT_CLSID:
+			return "A Class ID";
+		case VT_VECTOR:
+			return "Simple counted array";
+		case VT_ARRAY:
+			return "SAFEARRAY*";
+		case VT_BYREF:
+			return "Void pointer for local use";
+		case VT_BSTR_BLOB:
+			return "Reserved for system use";
+		default:
+			return "Unknown";
+	}
+}
+*/
+namespace std
+{
+	string to_string(const PROPVARIANT &var)
+	{
+		switch (var.vt)
+		{
+			case VT_I1:
+				return to_string(var.cVal);
+			case VT_UI1:
+				return to_string(var.bVal);
+			case VT_I2:
+				return to_string(var.iVal);
+			case VT_UI2:
+				return to_string(var.uiVal);
+			case VT_I4:
+				return to_string(var.lVal);
+			case VT_UI4:
+				return to_string(var.ulVal);
+			case VT_INT:
+				return to_string(var.intVal);
+			case VT_UINT:
+				return to_string(var.uintVal);
+			case VT_R4:
+				return to_string(var.fltVal + 0.5f);
+			case VT_R8:
+				return to_string(var.dblVal + 0.5);
+			case VT_BSTR:
+			{
+				const char* _Fmt = "%ws";
+				BSTR _Val = var.bstrVal;
+				const auto _Len = static_cast<size_t>(_CSTD _scprintf(_Fmt, _Val));
+				string _Str(_Len, '\0');
+				_CSTD sprintf_s(&_Str[0], _Len + 1, _Fmt, _Val);
+				return _Str;
+			}
+			default:
+				return "";
+		}
+	}
+}
+HRESULT EnumerateProperties(IWiaPropertyStorage* pPropertyStorage, std::vector<PROPID> &result)
+{
+	HRESULT hr = S_OK;
+
+	IEnumSTATPROPSTG* pEnumStatProp;
+
+	ULONG ulCount;
+
+	hr = pPropertyStorage->GetCount(&ulCount);
+
+	if (SUCCEEDED(hr))
+	{
+		result.reserve(ulCount);
+
+		hr = pPropertyStorage->Enum(&pEnumStatProp);
+
+		STATPROPSTG pStatProp;
+
+		PROPSPEC propSpec;
+		propSpec.ulKind = PRSPEC_PROPID;
+
+		PROPVARIANT propVar;
+
+		while (SUCCEEDED(hr))
+		{
+			hr = pEnumStatProp->Next(1, &pStatProp, NULL);
+
+			if (SUCCEEDED(hr))
+			{
+				HRESULT hr = pPropertyStorage->ReadMultiple(1, &propSpec, &propVar);
+
+				if (SUCCEEDED(hr))
+				{
+					ofLog(OF_LOG_NOTICE, "%ws: %s", pStatProp.lpwstrName, std::to_string(propVar).c_str());
+				}
+			}
+		}
+	}
+
+	return hr;
+}
+
+void PrintPropertiesAvailable(IWiaPropertyStorage* pPropertyStorage)
+{
+	HRESULT hr = S_OK;
+
+	IEnumSTATPROPSTG* pEnumStatProp;
+
+	ULONG ulCount;
+
+	hr = pPropertyStorage->GetCount(&ulCount);
+
+	if (SUCCEEDED(hr))
+	{
+		hr = pPropertyStorage->Enum(&pEnumStatProp);
+
+		STATPROPSTG pStatProp;
+
+		PROPSPEC propSpec;
+		propSpec.ulKind = PRSPEC_PROPID;
+
+		PROPVARIANT propVar;
+
+		while (hr == S_OK)
+		{
+			hr = pEnumStatProp->Next(1, &pStatProp, NULL);
+
+			if (SUCCEEDED(hr))
+			{
+				propSpec.propid = pStatProp.propid;
+				HRESULT hr = pPropertyStorage->ReadMultiple(1, &propSpec, &propVar);
+
+				if (SUCCEEDED(hr))
+				{
+					ofLog(OF_LOG_NOTICE, "%ws: %s (%i)", pStatProp.lpwstrName, std::to_string(propVar).c_str(), pStatProp.vt);
+				}
+			}
+		}
+	}
+}
+
+
+void PrintProperties(IWiaPropertyStorage* pPropertyStorage, const std::vector<PROPID> &propId)
+{
+	HRESULT hr = S_OK;
+
+	std::vector<PROPSPEC> propSpec(propId.size());
+	std::vector<PROPVARIANT> propVar(propId.size());
+	std::vector<LPOLESTR> propName(propId.size());
+
+	auto converter = [](const PROPID& id) { return PROPSPEC{ PRSPEC_PROPID, id }; };
+	std::transform(propId.begin(), propId.end(), propSpec.begin(), converter);
+
+	hr = pPropertyStorage->ReadPropertyNames(propId.size(), propId.data(), propName.data());
+
+	if (SUCCEEDED(hr))
+	{
+		hr = pPropertyStorage->ReadMultiple(propSpec.size(), propSpec.data(), propVar.data());
+
+		if (SUCCEEDED(hr))
+		{
+			for (int i = 0; i < propId.size(); i++)
+			{
+				auto& var = propVar[i];
+				auto& name = propName[i];
+
+				ofLog(OF_LOG_NOTICE, "%ws: %s", name, std::to_string(var).c_str());
+			}
+
+			FreePropVariantArray(propVar.size(), propVar.data());
+		}
+	}
+}
+
