@@ -222,6 +222,7 @@ C:\Sources\openFrameworks\addons\ofxDatGui\src\themes;%(AdditionalIncludeDirecto
     <ClCompile Include="src\SoundPlayer\AVSoundDecoder.cpp" />
     <ClCompile Include="src\SoundPlayer\AVSoundException.cpp" />
     <ClCompile Include="src\SoundPlayer\AVSoundPlayer.cpp" />
+    <ClCompile Include="src\SoundPlayer\AVSoundPlayerView.cpp" />
     <ClCompile Include="src\SoundPlayer\AVSoundReader.cpp" />
     <ClCompile Include="src\SoundPlayer\AVSoundResampler.cpp" />
     <ClCompile Include="src\SoundPlayer\AVUtils.cpp" />
@@ -234,6 +235,7 @@ C:\Sources\openFrameworks\addons\ofxDatGui\src\themes;%(AdditionalIncludeDirecto
     <ClCompile Include="src\StreamInput\Platform\Windows\WiaScannerInput.cpp" />
     <ClCompile Include="src\StreamInput\Platform\Windows\WiaScannerInput2.cpp" />
     <ClCompile Include="src\StreamInput\ScannerInput.cpp" />
+    <ClCompile Include="src\View.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\addons\ofxDatGui\src\components\ofxDatGui2dPad.h" />
@@ -266,14 +268,17 @@ C:\Sources\openFrameworks\addons\ofxDatGui\src\themes;%(AdditionalIncludeDirecto
     <ClInclude Include="src\DSP\EnvelopeFilter.h" />
     <ClInclude Include="src\DSP\Processor.h" />
     <ClInclude Include="src\DSP\SampleRate.h" />
+    <ClInclude Include="src\SheetCanvasView.h" />
     <ClInclude Include="src\ofApp.h" />
     <ClInclude Include="src\RingBuffer.h" />
     <ClInclude Include="src\SheetCanvas.h" />
     <ClInclude Include="src\SoundPlayer.h" />
+    <ClInclude Include="src\SoundPlayerView.h" />
     <ClInclude Include="src\SoundPlayer\AVFIFO.h" />
     <ClInclude Include="src\SoundPlayer\AVSoundDecoder.h" />
     <ClInclude Include="src\SoundPlayer\AVSoundException.h" />
     <ClInclude Include="src\SoundPlayer\AVSoundPlayer.h" />
+    <ClInclude Include="src\SoundPlayer\AVSoundPlayerView.h" />
     <ClInclude Include="src\SoundPlayer\AVSoundReader.h" />
     <ClInclude Include="src\SoundPlayer\AVSoundResampler.h" />
     <ClInclude Include="src\SoundPlayer\AVUtils.hpp" />
@@ -289,6 +294,7 @@ C:\Sources\openFrameworks\addons\ofxDatGui\src\themes;%(AdditionalIncludeDirecto
     <ClInclude Include="src\StreamInput\Platform\Windows\WiaScannerInput2.h" />
     <ClInclude Include="src\StreamInput\ScannerInput.h" />
     <ClInclude Include="src\StreamInput\ScannerInputEvent.h" />
+    <ClInclude Include="src\View.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="$(OF_ROOT)\libs\openFrameworksCompiled\project\vs\openframeworksLib.vcxproj">

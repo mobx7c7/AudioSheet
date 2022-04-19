@@ -49,6 +49,12 @@
     <ClCompile Include="..\..\..\addons\ofxDatGui\src\libs\ofxSmartFont\ofxSmartFont.cpp">
       <Filter>addons\ofxDatGui\src\libs\ofxSmartFont</Filter>
     </ClCompile>
+    <ClCompile Include="src\View.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\SheetCanvasView.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
     <ClCompile Include="src\StreamInput\ScannerInput.cpp">
       <Filter>src\StreamInput</Filter>
     </ClCompile>
@@ -66,6 +72,9 @@
     </ClCompile>
     <ClCompile Include="src\DSP\AverageFilter.cpp">
       <Filter>src\DSP</Filter>
+    </ClCompile>
+    <ClCompile Include="src\SoundPlayer\AVSoundPlayerView.cpp">
+      <Filter>src\SoundPlayer</Filter>
     </ClCompile>
     <ClCompile Include="src\SoundPlayer\AVSoundReader.cpp">
       <Filter>src\SoundPlayer</Filter>
@@ -248,6 +257,15 @@
     <ClInclude Include="..\..\..\addons\ofxDatGui\src\themes\ofxDatGuiThemes.h">
       <Filter>addons\ofxDatGui\src\themes</Filter>
     </ClInclude>
+    <ClInclude Include="src\View.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\SheetCanvasView.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\SoundPlayerView.h">
+      <Filter>src</Filter>
+    </ClInclude>
     <ClInclude Include="src\SoundPlayer.h">
       <Filter>src</Filter>
     </ClInclude>
@@ -273,6 +291,9 @@
       <Filter>src\DSP</Filter>
     </ClInclude>
     <ClInclude Include="src\SoundPlayer\AVSoundPlayer.h">
+      <Filter>src\SoundPlayer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\SoundPlayer\AVSoundPlayerView.h">
       <Filter>src\SoundPlayer</Filter>
     </ClInclude>
     <ClInclude Include="src\SoundPlayer\AVSoundReader.h">
