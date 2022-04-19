@@ -110,6 +110,9 @@
     <ClInclude Include="src\StreamInput\ScannerInputEvent.h">
       <Filter>src\StreamInput</Filter>
     </ClInclude>
+    <ClInclude Include="src\RingBuffer.h">
+      <Filter>src</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="icon.rc" />

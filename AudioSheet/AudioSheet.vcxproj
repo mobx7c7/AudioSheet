@@ -199,6 +199,7 @@
     <ClInclude Include="src\ClockPattern.h" />
     <ClInclude Include="src\DeviceImageReader.h" />
     <ClInclude Include="src\ofApp.h" />
+    <ClInclude Include="src\RingBuffer.h" />
     <ClInclude Include="src\SheetCanvas.h" />
     <ClInclude Include="src\StreamEvent.h" />
     <ClInclude Include="src\StreamInput.h" />
