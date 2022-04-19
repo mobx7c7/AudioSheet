@@ -10,30 +10,26 @@
 class WiaScannerInput2 : public ScannerInput
 {
 private:
+	int selectedDevice = 0;
 	std::vector<BSTR> devices;
 	IWiaDevMgr* pWiaDevMgr;
-	IWiaItem* pWiaItem;
-	DWORD readThreadId;
+	IWiaItem* pWiaDevice;
+
 private:
-	//DWORD WINAPI GetImageThread(LPVOID lpParam);
-	void RedirectEvent(const StreamEventBase&);
-	HRESULT CreateDeviceManager(IWiaDevMgr** ppWiaDevMgr);
-	HRESULT CreateDevice(IWiaDevMgr* pWiaDevMgr, BSTR bstrDeviceID, IWiaItem** ppWiaDevice);
-	HRESULT EnumerateDevices(IWiaDevMgr *pWiaDevMgr);
-	HRESULT EnumerateChildren(IWiaItem* pItemRoot, LONG* lCount, IWiaItem*** ppiWiaItem);
+	LONG GetPropertyLong(PROPID);
+	HRESULT CreateDevice(int deviceIndex);
+	HRESULT ListDevices();
+	HRESULT ListChildren(IWiaItem* pItemRoot, LONG* lCount, IWiaItem*** ppiWiaItem);
 	HRESULT AddDevice(IWiaPropertyStorage *pStorage);
-	HRESULT GetImage(
-		HWND hWndParent,
-		LONG lDeviceType,
-		LONG lFlags,
-		LONG lIntent,
-		IWiaDevMgr *pSuppliedWiaDevMgr,
-		IWiaItem *pSuppliedItemRoot,
-		GUID *pguidFormat);
+	HRESULT FillProperties(IWiaPropertyStorage*);
+	HRESULT DownloadImage(LONG lDeviceType, LONG lFlags, LONG lIntent, GUID *pguidFormat);
+
 public:
 	WiaScannerInput2();
 	~WiaScannerInput2();
-	void open(int deviceIndex);
+	void open(int deviceIndex); // rename to selectDevice
+	void setup();
+	void refresh();
 	void close();
 	void read();
 };

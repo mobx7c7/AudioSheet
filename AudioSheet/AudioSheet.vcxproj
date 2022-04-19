@@ -193,6 +193,7 @@
     <ClCompile Include="src\StreamInput\Platform\Windows\WiaCommon.cpp" />
     <ClCompile Include="src\StreamInput\Platform\Windows\WiaScannerInput.cpp" />
     <ClCompile Include="src\StreamInput\Platform\Windows\WiaScannerInput2.cpp" />
+    <ClCompile Include="src\StreamInput\ScannerInput.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\ClockPattern.h" />

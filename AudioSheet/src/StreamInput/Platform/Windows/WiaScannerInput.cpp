@@ -47,12 +47,6 @@ WiaScannerInput::~WiaScannerInput()
 	}
 }
 
-void WiaScannerInput::HandleEventsFromTransferCb(const StreamEventBase& ev)
-{
-	if (eventCb)
-		eventCb(ev);
-}
-
 HRESULT WiaScannerInput::CreateWiaDeviceManager(IWiaDevMgr2 ** ppWiaDevMgr)
 {
 	if (NULL == ppWiaDevMgr)
@@ -79,7 +73,7 @@ HRESULT WiaScannerInput::CreateWiaDevice(IWiaDevMgr2 * pWiaDevMgr, BSTR bstrDevi
 	return pWiaDevMgr->CreateDevice(0, bstrDeviceID, ppWiaDevice);
 }
 
-HRESULT WiaScannerInput::EnumerateDevices(IWiaDevMgr2 * pWiaDevMgr2)
+HRESULT WiaScannerInput::ListDevices(IWiaDevMgr2 * pWiaDevMgr2)
 {
 	if (NULL == pWiaDevMgr2)
 	{
@@ -320,7 +314,7 @@ HRESULT WiaScannerInput::DownloadItem(IWiaItem2* pWiaItem2, BOOL bTransferFlag)
 	{
 		// Create our callback class
 		CWiaTransferCallback *pWiaClassCallback = new CWiaTransferCallback(
-			std::bind(&WiaScannerInput::HandleEventsFromTransferCb, this, std::placeholders::_1));
+			std::bind(&WiaScannerInput::dispachEvent, this, std::placeholders::_1));
 
 		if (pWiaClassCallback)
 		{
@@ -457,7 +451,7 @@ void WiaScannerInput::refresh()
 {
 	if (pWiaDevMgr)
 	{
-		HRESULT hr = EnumerateDevices(pWiaDevMgr);
+		HRESULT hr = ListDevices(pWiaDevMgr);
 		if (SUCCEEDED(hr))
 		{
 			for (auto& deviceInfo : availableDevices)

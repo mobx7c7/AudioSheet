@@ -42,17 +42,18 @@ private:
 	std::vector<DeviceInfo> availableDevices;
 	IWiaDevMgr2* pWiaDevMgr;
 	IWiaItem2 *pWiaRootItem2; // device
+
 private:
-	void HandleEventsFromTransferCb(const StreamEventBase& ev);
 	HRESULT CreateWiaDeviceManager(IWiaDevMgr2 **ppWiaDevMgr);
 	HRESULT CreateWiaDevice(IWiaDevMgr2 *pWiaDevMgr, BSTR bstrDeviceID, IWiaItem2 **ppWiaDevice);
-	HRESULT EnumerateDevices(IWiaDevMgr2 *pWiaDevMgr);
+	HRESULT ListDevices(IWiaDevMgr2 *pWiaDevMgr);
 	HRESULT EnumerateCapabilities(IWiaItem2 *pWiaItem);
 	HRESULT EnumerateItems(IWiaItem2 *pIWiaItem2Root);
 	HRESULT ReadDeviceInfo(IWiaPropertyStorage *pWiaPropertyStorage, DeviceInfo* availableDevices);
 	HRESULT TransferItem(IWiaItem2 *pIWiaItem2);
 	HRESULT DownloadItem(IWiaItem2* pWiaItem2, BOOL bFolderTransfer);
 	void refresh();
+
 public:
 	WiaScannerInput();
 	~WiaScannerInput();

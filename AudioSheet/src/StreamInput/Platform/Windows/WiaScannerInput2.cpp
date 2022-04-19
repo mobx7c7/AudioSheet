@@ -4,50 +4,77 @@
 #include <ofLog.h>
 #include <codecvt>
 
-void WiaScannerInput2::RedirectEvent(const StreamEventBase &ev)
+LONG ConvertImageType(ScannerImageType type)
 {
-	if (eventCb)
-		eventCb(ev);
-}
-
-HRESULT WiaScannerInput2::CreateDeviceManager(IWiaDevMgr** ppWiaDevMgr)
-{
-	if (NULL == ppWiaDevMgr)
+	switch (type)
 	{
-		return E_INVALIDARG;
+		case ScannerImageType::Text:
+			return WIA_INTENT_IMAGE_TYPE_TEXT;
+		case ScannerImageType::Grayscale:
+			return WIA_INTENT_IMAGE_TYPE_GRAYSCALE;
+		case ScannerImageType::Color:
+			return WIA_INTENT_IMAGE_TYPE_COLOR;
+		default:
+			return 0;
 	}
-
-	*ppWiaDevMgr = NULL;
-
-	// Create an instance of the device manager
-	return CoCreateInstance(CLSID_WiaDevMgr, NULL, CLSCTX_LOCAL_SERVER, IID_IWiaDevMgr, (void**)ppWiaDevMgr);
 }
 
-HRESULT WiaScannerInput2::CreateDevice(IWiaDevMgr* pWiaDevMgr, BSTR bstrDeviceID, IWiaItem** ppWiaDevice)
+LONG WiaScannerInput2::GetPropertyLong(PROPID propid)
+{
+	switch (propid)
+	{
+		case WIA_IPS_XRES:
+			return getResolutionX();
+		case WIA_IPS_YRES:
+			return getResolutionY();
+		case WIA_IPS_XPOS:
+			return getPositionX();
+		case WIA_IPS_YPOS:
+			return getPositionY();
+		case WIA_IPS_XEXTENT:
+			return getExtentX();
+		case WIA_IPS_YEXTENT:
+			return getExtentY();
+		case WIA_IPS_CUR_INTENT:
+			return ConvertImageType(getImageType());
+		default:
+			return 0u;
+	}
+}
+
+HRESULT WiaScannerInput2::CreateDevice(int deviceIndex)
 {
 	HRESULT hr = S_OK;
 
-	if (NULL == pWiaDevMgr || NULL == bstrDeviceID || NULL == ppWiaDevice)
+	BSTR bstrDeviceID = devices[deviceIndex];
+
+	if (bstrDeviceID == NULL)
 	{
 		hr = E_INVALIDARG;
-		ReportError(TEXT("Invalid argument passed to CreateDevice"), hr);
+		ReportError(TEXT("Invalid device ID"), hr);
 		return hr;
 	}
 
-	*ppWiaDevice = NULL;
+	pWiaDevice = NULL;
 
-	// Create the WIA Device
-	return pWiaDevMgr->CreateDevice(bstrDeviceID, ppWiaDevice);
+	hr = pWiaDevMgr->CreateDevice(bstrDeviceID, &pWiaDevice);
+
+	if (SUCCEEDED(hr))
+	{
+		selectedDevice = deviceIndex;
+	}
+
+	return hr;
 }
 
-HRESULT WiaScannerInput2::EnumerateDevices(IWiaDevMgr *pWiaDevMgr)
+HRESULT WiaScannerInput2::ListDevices()
 {
 	HRESULT hr = S_OK;
 
 	if (NULL == pWiaDevMgr)
 	{
 		hr = E_INVALIDARG;
-		ReportError(TEXT("Invalid argument passed to ListDevices"), hr);
+		ReportError(TEXT("Device manager not initialized"), hr);
 		return hr;
 	}
 
@@ -62,14 +89,12 @@ HRESULT WiaScannerInput2::EnumerateDevices(IWiaDevMgr *pWiaDevMgr)
 
 		if (SUCCEEDED(hr))
 		{
-			devices.clear();
-
 			while (S_OK == hr)
 			{
 				// Get the next device's property storage interface pointer
 				IWiaPropertyStorage *pWiaPropertyStorage = NULL;
 				hr = pWiaEnumDevInfo->Next(1, &pWiaPropertyStorage, NULL);
-
+				
 				if (hr == S_OK)
 				{
 					hr = AddDevice(pWiaPropertyStorage);
@@ -109,7 +134,7 @@ HRESULT WiaScannerInput2::EnumerateDevices(IWiaDevMgr *pWiaDevMgr)
 	return hr;
 }
 
-HRESULT WiaScannerInput2::EnumerateChildren(IWiaItem* pItemRoot, LONG* lCount, IWiaItem*** ppiWiaItem)
+HRESULT WiaScannerInput2::ListChildren(IWiaItem* pItemRoot, LONG* lCount, IWiaItem*** ppiWiaItem)
 {
 	IEnumWiaItem *pEnumWiaItem = NULL;
 
@@ -146,6 +171,7 @@ HRESULT WiaScannerInput2::EnumerateChildren(IWiaItem* pItemRoot, LONG* lCount, I
 					{
 						BSTR bstrDevName = NULL;
 						ReadPropertyBSTR(pWiaPropertyStorage, WIA_IPA_FULL_ITEM_NAME, &bstrDevName);
+						
 						ofLog(OF_LOG_NOTICE, "Item Name: %ws", bstrDevName);
 
 						pWiaPropertyStorage->Release();
@@ -155,7 +181,7 @@ HRESULT WiaScannerInput2::EnumerateChildren(IWiaItem* pItemRoot, LONG* lCount, I
 					*pItemChildNext++ = pItemChild;
 				}
 			}
-			ofLogNotice();
+			ofLogNotice() << std::endl;
 		}
 
 		if (S_FALSE == hr)
@@ -173,127 +199,79 @@ HRESULT WiaScannerInput2::EnumerateChildren(IWiaItem* pItemRoot, LONG* lCount, I
 HRESULT WiaScannerInput2::AddDevice(IWiaPropertyStorage *pWiaPropertyStorage)
 {
 	BSTR deviceId;
+
 	HRESULT hr = ReadPropertyBSTR(pWiaPropertyStorage, WIA_DIP_DEV_ID, &deviceId);
+
 	if (SUCCEEDED(hr))
 	{
 		devices.push_back(deviceId);
 		PrintProperties(pWiaPropertyStorage, { WIA_DIP_DEV_NAME, WIA_DIP_DEV_DESC });
 	}
+
 	return hr;
 }
 
-HRESULT WiaScannerInput2::GetImage(
-	HWND				hWndParent,
-	LONG                 lDeviceType,
-	LONG                 lFlags,
-	LONG                 lIntent,
-	IWiaDevMgr          *pSuppliedWiaDevMgr,
-	IWiaItem            *pSuppliedItemRoot,
-	GUID                *pguidFormat
-)
+
+
+
+HRESULT WiaScannerInput2::FillProperties(IWiaPropertyStorage* pWiaPropertyStorage)
+{
+	HRESULT hr = S_OK;
+
+	std::vector<PROPID> properties
+	{
+		WIA_IPS_XRES,
+		WIA_IPS_YRES,
+		//WIA_IPS_XPOS,
+		//WIA_IPS_YPOS,
+		//WIA_IPS_XEXTENT,
+		//WIA_IPS_YEXTENT,
+		WIA_IPS_CUR_INTENT,
+	};
+
+	for (auto propid : properties)
+	{
+		hr = WritePropertyLong(pWiaPropertyStorage, propid, GetPropertyLong(propid));
+
+		if (FAILED(hr))
+		{
+			//ReportError(TEXT("Error writing property"), hr);
+			break;
+		}
+	}
+
+	return hr;
+}
+
+HRESULT WiaScannerInput2::DownloadImage(LONG lDeviceType, LONG lFlags, LONG lIntent, GUID *pguidFormat)
 {
 	HRESULT hr;
 
-	// Initialize the local root item variable with the supplied value.
-	// If no value is supplied, display the device selection common dialog.
-
-	CComPtr<IWiaItem> pItemRoot = pSuppliedItemRoot;
-
-	if (pItemRoot == NULL)
-	{
-		// Initialize the device manager pointer with the supplied value
-		// If no value is supplied, connect to the local device manager
-
-		CComPtr<IWiaDevMgr> pWiaDevMgr = pSuppliedWiaDevMgr;
-
-		if (pWiaDevMgr == NULL)
-		{
-			hr = pWiaDevMgr.CoCreateInstance(CLSID_WiaDevMgr);
-
-			if (FAILED(hr))
-			{
-				return hr;
-			}
-		}
-
-		// Display the device selection common dialog
-
-		hr = pWiaDevMgr->SelectDeviceDlg(hWndParent, lDeviceType, lFlags, 0, &pItemRoot);
-
-		if (FAILED(hr) || hr == S_FALSE)
-		{
-			return hr;
-		}
-	}
-
-
-
-
-
-	// Display the image selection common dialog 
-	/*
-	CComPtrArray<IWiaItem> ppIWiaItem;
-
-	hr = pItemRoot->DeviceDlg(hWndParent, lFlags, lIntent, &ppIWiaItem.Count(), &ppIWiaItem);
-	
-	if (FAILED(hr) || hr == S_FALSE)
-	{
-		return hr;
-	}
-	*/
-
-
+	/////////////////////////////////////////////////////////////////////////
 	// Define image without image selection dialog
+	/////////////////////////////////////////////////////////////////////////
 	CComPtrArray<IWiaItem> ppIWiaItem;
 
-	hr = EnumerateChildren(pItemRoot, &ppIWiaItem.Count(), &ppIWiaItem);
-	
-	if (FAILED(hr))
-	{
-		return hr;
-	}
+	hr = ListChildren(this->pWiaDevice, &ppIWiaItem.Count(), &ppIWiaItem);
+	if (FAILED(hr)) return hr;
 	
 	CComQIPtr<IWiaPropertyStorage> pWiaPropertyStorage(ppIWiaItem[0]);
-	//WritePropertyLong(pWiaPropertyStorage, WIA_IPS_XRES, 75);
-	//WritePropertyLong(pWiaPropertyStorage, WIA_IPS_YRES, 75);
-	//WritePropertyLong(pWiaPropertyStorage, WIA_IPS_CUR_INTENT, WIA_INTENT_IMAGE_TYPE_GRAYSCALE);
-	WritePropertyLong(pWiaPropertyStorage, WIA_IPS_CUR_INTENT, WIA_INTENT_IMAGE_TYPE_COLOR);
-
-
-
-
-
-
-
-
-
+	hr = FillProperties(pWiaPropertyStorage);
+	if (FAILED(hr)) return hr;
 
 	// For ADF scanners, the common dialog explicitly sets the page count to one.
 	// So in order to transfer multiple images, set the page count to ALL_PAGES
 	// if the WIA_DEVICE_DIALOG_SINGLE_IMAGE flag is not specified, 
+	//
+	// ADF: Automatic Document Feeder
 
 	if (!(lFlags & WIA_DEVICE_DIALOG_SINGLE_IMAGE))
 	{
 		// Get the property storage interface pointer for the root item
 
-		CComQIPtr<IWiaPropertyStorage> pWiaRootPropertyStorage(pItemRoot);
+		CComQIPtr<IWiaPropertyStorage> pWiaRootPropertyStorage(this->pWiaDevice);
 
-		if (pWiaRootPropertyStorage == NULL)
-		{
-			return E_NOINTERFACE;
-		}
-
-		/*
-		std::vector<PROPID> propSelection
-		{
-			WIA_IPS_OPTICAL_XRES,
-			WIA_IPS_OPTICAL_YRES,
-			WIA_IPS_ORIENTATION,
-		};
-		*/
-		//PrintProperties(pWiaRootPropertyStorage, propSelection);
-		PrintPropertiesAvailable(pWiaRootPropertyStorage);
-		ofLogNotice();
+		if (pWiaRootPropertyStorage == NULL) return E_NOINTERFACE;
 
 		// Determine if the selected device is a scanner or not
 
@@ -334,75 +312,29 @@ HRESULT WiaScannerInput2::GetImage(
 		}
 	}
 
-
-
-
-
-
-
-
+	/////////////////////////////////////////////////////////////////////////
 	// Create the data callback interface
+	/////////////////////////////////////////////////////////////////////////
 
-	auto eventFunc = std::bind(&WiaScannerInput2::RedirectEvent, this, std::placeholders::_1);
+	auto eventFunc = std::bind(&WiaScannerInput2::dispachEvent, this, std::placeholders::_1);
+
 	CComPtr<CWiaDataCallback> pDataCallback = new CWiaDataCallback(eventFunc);
 
-	if (pDataCallback == NULL)
-	{
-		return E_OUTOFMEMORY;
-	}
+	if (pDataCallback == NULL) return E_OUTOFMEMORY;
 
-
-
-
-
-
-
-
-
+	/////////////////////////////////////////////////////////////////////////
 	// Start the transfer of the selected items
+	/////////////////////////////////////////////////////////////////////////
 
 	for (int i = 0; i < ppIWiaItem.Count(); ++i)
 	{
 		// Get the interface pointers
 
 		CComQIPtr<IWiaPropertyStorage> pWiaPropertyStorage(ppIWiaItem[i]);
-
-		if (pWiaPropertyStorage == NULL)
-		{
-			return E_NOINTERFACE;
-		}
-		/*
-		std::vector<PROPID> propSelection
-		{
-			WIA_IPA_DATATYPE,
-			WIA_IPA_DEPTH,
-			WIA_IPA_COMPRESSION,
-			WIA_IPA_CHANNELS_PER_PIXEL,
-			WIA_IPA_BITS_PER_CHANNEL,
-			WIA_IPA_PIXELS_PER_LINE,
-			WIA_IPA_BYTES_PER_LINE,
-			WIA_IPA_NUMBER_OF_LINES,
-			WIA_IPS_XRES,
-			WIA_IPS_YRES,
-			WIA_IPS_XPOS,
-			WIA_IPS_YPOS,
-			WIA_IPS_XEXTENT,
-			WIA_IPS_YEXTENT,
-			//WIA_IPS_ORIENTATION,
-			WIA_IPS_CUR_INTENT,
-		};
-		PrintProperties(pWiaPropertyStorage, propSelection);
-		*/
-	
-		PrintPropertiesAvailable(pWiaPropertyStorage);
-		ofLogNotice();
+		if (pWiaPropertyStorage == NULL) return E_NOINTERFACE;
 
 		CComQIPtr<IWiaDataTransfer> pIWiaDataTransfer(ppIWiaItem[i]);
-
-		if (pIWiaDataTransfer == NULL)
-		{
-			return E_NOINTERFACE;
-		}
+		if (pIWiaDataTransfer == NULL) return E_NOINTERFACE;
 
 		// Set the transfer type
 
@@ -418,19 +350,13 @@ HRESULT WiaScannerInput2::GetImage(
 
 		PropVariantClear(&varTymed);
 
-		if (FAILED(hr))
-		{
-			return hr;
-		}
+		if (FAILED(hr)) return hr;
 
 		// If there is no transfer format specified, use the device default
 
 		GUID guidFormat = GUID_NULL;
 
-		if (pguidFormat == NULL)
-		{
-			pguidFormat = &guidFormat;
-		}
+		if (pguidFormat == NULL) pguidFormat = &guidFormat;
 
 		if (*pguidFormat == GUID_NULL)
 		{
@@ -440,10 +366,7 @@ HRESULT WiaScannerInput2::GetImage(
 
 			hr = ReadPropertyGuid(pWiaPropertyStorage, &specPreferredFormat, pguidFormat);
 
-			if (FAILED(hr))
-			{
-				return hr;
-			}
+			if (FAILED(hr)) return hr;
 		}
 
 		// Set the transfer format
@@ -456,20 +379,15 @@ HRESULT WiaScannerInput2::GetImage(
 		varFormat.vt = VT_CLSID;
 		varFormat.puuid = (CLSID *)CoTaskMemAlloc(sizeof(CLSID));
 
-		if (varFormat.puuid == NULL)
-		{
-			return E_OUTOFMEMORY;
-		}
+		if (varFormat.puuid == NULL) return E_OUTOFMEMORY;
 
 		*varFormat.puuid = *pguidFormat;
 
 		hr = pWiaPropertyStorage->WriteMultiple(1, &specFormat, &varFormat, WIA_IPA_FIRST);
+		
 		PropVariantClear(&varFormat);
 
-		if (FAILED(hr))
-		{
-			return hr;
-		}
+		if (FAILED(hr)) return hr;
 
 		// Read the transfer buffer size from the device, default to 64K
 
@@ -480,10 +398,7 @@ HRESULT WiaScannerInput2::GetImage(
 		LONG nBufferSize;
 		hr = ReadPropertyLong(pWiaPropertyStorage, &specBufferSize, &nBufferSize);
 
-		if (FAILED(hr))
-		{
-			nBufferSize = 64 * 1024;
-		}
+		if (FAILED(hr)) nBufferSize = 64 * 1024;
 
 		// Choose double buffered transfer for better performance
 
@@ -496,10 +411,7 @@ HRESULT WiaScannerInput2::GetImage(
 
 		hr = pIWiaDataTransfer->idtGetBandedData(&wiaDataTransferInfo, pDataCallback);
 
-		if (FAILED(hr) || hr == S_FALSE)
-		{
-			return hr;
-		}
+		if (FAILED(hr) || hr == S_FALSE) return hr;
 	}
 
 	return S_OK;
@@ -508,57 +420,108 @@ HRESULT WiaScannerInput2::GetImage(
 
 
 WiaScannerInput2::WiaScannerInput2()
-{}
+	: selectedDevice(-1)
+	, pWiaDevMgr(NULL)
+{
+
+}
 
 WiaScannerInput2::~WiaScannerInput2()
-{}
-
-void WiaScannerInput2::open(int deviceIndex)
-{}
-
-void WiaScannerInput2::close()
-{}
-
-void WiaScannerInput2::read()
 {
-	HWND hWndParent = GetActiveWindow();
-
-	HRESULT hr = S_OK;
-
-	hr = CreateDeviceManager(&pWiaDevMgr);
-
-	if (FAILED(hr))
+	if (pWiaDevMgr != NULL)
 	{
-		ReportError(TEXT("Error creating device manager"), hr);
+		pWiaDevMgr->Release();
 	}
+}
 
-	hr = EnumerateDevices(pWiaDevMgr);
+void WiaScannerInput2::setup()
+{
+	if (pWiaDevMgr == NULL)
+	{
+		HRESULT hr = CoCreateInstance(CLSID_WiaDevMgr, NULL, CLSCTX_LOCAL_SERVER, IID_IWiaDevMgr, (void**)&pWiaDevMgr);
+
+		if (SUCCEEDED(hr))
+		{
+			refresh();
+		}
+		else
+		{
+			ReportError(TEXT("Error creating device manager"), hr);
+		}
+	}
+}
+
+void WiaScannerInput2::refresh()
+{
+	HRESULT hr = ListDevices();
 
 	if (FAILED(hr))
 	{
 		ReportError(TEXT("Error listing devices"), hr);
 	}
-
-	if (!devices.empty())
+	else if(devices.empty())
 	{
-		hr = CreateDevice(pWiaDevMgr, devices[0], &pWiaItem);
+		ofLogError() << "No devices available";
+	}
+	else
+	{
+		//TODO: print available devices
+	}
+}
 
-		if (FAILED(hr))
+void WiaScannerInput2::open(int deviceIndex)
+{
+	if (devices.empty())
+	{
+		ofLogError() << "No devices available";
+	}
+	else if(deviceIndex < 0 || deviceIndex >= devices.size())
+	{
+		ofLogError() << "Device not found";
+	}
+	else if (deviceIndex == selectedDevice)
+	{
+		ofLogError() << "Device is already opened";
+	}
+	else
+	{
+		HRESULT hr = CreateDevice(deviceIndex);
+
+		if (SUCCEEDED(hr))
+		{
+			ofLogNotice() << "Device selected";
+			//TODO: Print selected device
+		}
+		else
 		{
 			ReportError(TEXT("Error creating device"), hr);
 		}
+	}
+}
 
-		hr = GetImage(hWndParent, StiDeviceTypeScanner, 0, WIA_INTENT_NONE, pWiaDevMgr, pWiaItem, NULL);
+void WiaScannerInput2::close()
+{
+	if (pWiaDevice != NULL)
+	{
+		selectedDevice = -1;
+		pWiaDevice->Release();
+		pWiaDevice = NULL;
+	}
+}
+
+void WiaScannerInput2::read()
+{
+	if (pWiaDevice == NULL)
+	{
+		ofLogError() << "Device not selected";
+	}
+	else
+	{
+		HRESULT hr = DownloadImage(StiDeviceTypeScanner, 0, WIA_INTENT_NONE, NULL);
 
 		if (FAILED(hr))
 		{
 			ReportError(TEXT("Error downloading image"), hr);
 		}
 	}
-	else
-	{
-		ofLogNotice() << "No devices available";
-	}
-
-	pWiaDevMgr->Release();
 }

@@ -38,6 +38,9 @@
       <Filter>src\StreamInput\Platform\Windows</Filter>
     </ClCompile>
     <ClCompile Include="src\DeviceImageReader.cpp" />
+    <ClCompile Include="src\StreamInput\ScannerInput.cpp">
+      <Filter>src\StreamInput</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="src">

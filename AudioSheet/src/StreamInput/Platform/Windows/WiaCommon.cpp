@@ -762,6 +762,8 @@ void PrintPropertiesAvailable(IWiaPropertyStorage* pPropertyStorage)
 			}
 		}
 	}
+
+	ofLogNotice() << std::endl;
 }
 
 
