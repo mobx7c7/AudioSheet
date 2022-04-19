@@ -1,45 +1,39 @@
 #pragma once
-#include <ofGraphicsBaseTypes.h>
 #include <ofFbo.h>
 #include "ClockPattern.h"
 
-class SheetCanvas : public ofBaseDraws
+class SheetCanvas
 {
 private:
-	const static glm::vec2
-		XMASK,
-		YMASK;
 	const static float
 		UNIT_INCHES;
 private:
 	ofBaseApp*
-		baseApp;
+		m_App;
 	std::unique_ptr<ClockPattern>
-		clockPattern;
+		m_ClockPattern;
 	ofFbo
-		renderFbo;
-	mutable ofRectangle
-		sheetRect;
+		m_RenderFbo;
 	glm::vec2
-		dimension,
-		resolution;
+		m_Dimension,
+		m_Resolution;
 	int
-		dotsPerInch;
+		m_DotsPerInch;
+	bool
+		m_NeedsUpdate;
+
 public:
 	SheetCanvas(ofBaseApp* baseApp);
 	~SheetCanvas();
+
 public:
-	const ofFbo& getFbo() { return renderFbo; } 
-	const glm::vec2& getDimension() { return dimension; }
-	const glm::vec2& getResolution() { return resolution; }
-	const int& getDPI() { return dotsPerInch; }
-public:
-	void setup();
-	void reload();
+	void setDimension(glm::vec2);
+	void setDotsPerInch(int);
+	const ofFbo& getFbo();
+	const glm::vec2& getDimension();
+	const glm::vec2& getResolution();
+	const int& getDPI();
 	void update();
-	void draw(const ofRectangle & rect) const override;
-	void draw(float x, float y, float w, float h) const override;
-	float getHeight() const override;
-	float getWidth() const override;
+	void reload();
 };
 
