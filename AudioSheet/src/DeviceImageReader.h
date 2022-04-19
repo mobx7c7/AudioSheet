@@ -16,7 +16,7 @@ private:
 	ofFbo magFbo;
 private:
 	void onDeviceEvent(const StreamEventBase& eventBase);
-	void unpackPixelData(PBITMAPINFOHEADER pHeader, int stride, ReceiveBuffer &buf, ReceiveBuffer::iterator beg);
+	void readPackedData(PBITMAPINFOHEADER pHeader, int stride,  ReceiveBuffer::iterator beg, ReceiveBuffer::iterator end, ReceiveBuffer &buf);
 	void readPixelData(PBITMAPINFOHEADER pHeader, std::vector<uint8_t> &obuf);
 	void allocateTextureFromBMP();
 public:

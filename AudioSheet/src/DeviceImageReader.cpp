@@ -30,8 +30,11 @@ void DeviceImageReader::setup()
 
 	try
 	{
-		scannerInput = std::make_shared<WiaScannerInput2>();
+		auto scannerInput = std::make_shared<WiaScannerInput2>();
 		scannerInput->setCallback(std::bind(&DeviceImageReader::onDeviceEvent, this, std::placeholders::_1));
+		scannerInput->setup();
+
+		this->scannerInput = std::move(scannerInput);
 	}
 	catch (const std::exception& e)
 	{
@@ -83,26 +86,31 @@ void DeviceImageReader::onDeviceEvent(const StreamEventBase& eventBase)
 	}
 }
 
-void DeviceImageReader::unpackPixelData(PBITMAPINFOHEADER pHeader, int stride, ReceiveBuffer &buf, ReceiveBuffer::iterator beg)
+void DeviceImageReader::readPackedData(
+	PBITMAPINFOHEADER pHeader, 
+	int stride, 
+	ReceiveBuffer::iterator beg,
+	ReceiveBuffer::iterator end,
+	ReceiveBuffer &obuf)
 {
 	std::vector<uint8_t> unpacked(pHeader->biWidth);
 
-	const int plen = 8 / pHeader->biBitCount;
-	const int pval = 256 / pHeader->biBitCount - 1;
-	const int mask = pHeader->biBitCount;
+	// Nota: Na maioria das vezes, biBitCount é == 1 
+
+	const int pixelBits = 8 / pHeader->biBitCount;
+	const int pixelValue = 256 / pHeader->biBitCount - 1;
+	const int pixelMask = pHeader->biBitCount;
 	int x, nextByte, nextShift;
 
-	auto end = buf.end();
-
-	while (beg < end)
+	while (beg != end)
 	{
 		for (x = 0; x < pHeader->biWidth; x++)
 		{
-			nextByte = x / plen;
-			nextShift = 7 - (x % plen) * pHeader->biBitCount;
-			unpacked[x] = ((beg[nextByte] >> nextShift) & mask) * pval;
+			nextByte = x / pixelBits;
+			nextShift = 7 - (x % pixelBits) * pHeader->biBitCount;
+			unpacked[x] = ((beg[nextByte] >> nextShift) & pixelMask) * pixelValue;
 		}
-		std::copy(unpacked.begin(), unpacked.end(), std::back_inserter(buf));
+		std::copy(unpacked.begin(), unpacked.end(), std::back_inserter(obuf));
 		
 		beg += stride;
 	}
@@ -113,9 +121,8 @@ void DeviceImageReader::readPixelData(PBITMAPINFOHEADER pHeader, std::vector<uin
 	// Calculating Surface Stride
 	// Source: BITMAPINFOHEADER structure page @ Windows API Reference.
 	int stride = (((pHeader->biWidth * pHeader->biBitCount) + 31) & ~31) >> 3;
-	//int bytesPerLine = pHeader->biBitCount < 8 ? stride : pHeader->biWidth * (pHeader->biBitCount / 8);
 
-	// Color table: 2^n indices, 4 bytes per index
+	// Color table: 2^n indices, 4 bytes per index (RGBA32?)
 	int colorTableSize = pHeader->biClrUsed * 4;
 
 	auto beg = receiveBuffer.begin();
@@ -125,25 +132,10 @@ void DeviceImageReader::readPixelData(PBITMAPINFOHEADER pHeader, std::vector<uin
 
 	if (pHeader->biBitCount < 8)
 	{
-		unpackPixelData(pHeader, stride, receiveBuffer, beg);
+		readPackedData(pHeader, stride, beg, end, obuf);
 	}
-	else
+	else 
 	{
-		/*
-		if (stride != bytesPerLine)
-		{
-			while (beg < end)
-			{
-				std::copy_n(beg, stride, std::back_inserter(obuf));
-				beg += stride;
-			}
-		}
-		else
-		{
-			std::copy(beg, end, std::back_inserter(obuf));
-		}
-		*/
-
 		std::copy(beg, end, std::back_inserter(obuf));
 	}
 }
@@ -160,6 +152,7 @@ void DeviceImageReader::allocateTextureFromBMP()
 		// Source: BITMAPINFOHEADER structure page @ Windows API Reference.
 
 		bool isTopDown = pHeader->biHeight < 0;
+
 		int width = pHeader->biWidth;
 		int height = isTopDown ? ~pHeader->biHeight : pHeader->biHeight;
 
