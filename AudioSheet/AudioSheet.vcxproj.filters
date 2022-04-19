@@ -43,6 +43,27 @@
     <ClCompile Include="src\StreamInput\ScannerInput.cpp">
       <Filter>src\StreamInput</Filter>
     </ClCompile>
+    <ClCompile Include="src\SoundPlayer\AVSoundReader.cpp">
+      <Filter>src\SoundPlayer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\SoundPlayer\AVSoundResampler.cpp">
+      <Filter>src\SoundPlayer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\SoundPlayer\AVUtils.cpp">
+      <Filter>src\SoundPlayer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\SoundPlayer\AVFIFO.cpp">
+      <Filter>src\SoundPlayer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\SoundPlayer\AVSoundDecoder.cpp">
+      <Filter>src\SoundPlayer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\SoundPlayer\AVSoundException.cpp">
+      <Filter>src\SoundPlayer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\SoundPlayer\AVSoundPlayer.cpp">
+      <Filter>src\SoundPlayer</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="src">
@@ -59,6 +80,9 @@
     </Filter>
     <Filter Include="src\StreamInput\Platform\Windows">
       <UniqueIdentifier>{96b7d337-c9fa-429e-9ea2-423de164e8cc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\SoundPlayer">
+      <UniqueIdentifier>{7275ee6a-a1a5-4a6b-898e-5898664d8a77}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -112,6 +136,30 @@
     </ClInclude>
     <ClInclude Include="src\RingBuffer.h">
       <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\SoundPlayer.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\SoundPlayer\AVSoundPlayer.h">
+      <Filter>src\SoundPlayer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\SoundPlayer\AVSoundReader.h">
+      <Filter>src\SoundPlayer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\SoundPlayer\AVSoundResampler.h">
+      <Filter>src\SoundPlayer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\SoundPlayer\AVUtils.hpp">
+      <Filter>src\SoundPlayer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\SoundPlayer\AVFIFO.h">
+      <Filter>src\SoundPlayer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\SoundPlayer\AVSoundDecoder.h">
+      <Filter>src\SoundPlayer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\SoundPlayer\AVSoundException.h">
+      <Filter>src\SoundPlayer</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
