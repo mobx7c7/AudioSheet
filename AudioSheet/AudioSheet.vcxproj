@@ -182,6 +182,12 @@
   <ItemGroup>
     <ClCompile Include="src\ClockPattern.cpp" />
     <ClCompile Include="src\DeviceImageReader.cpp" />
+    <ClCompile Include="src\DSP\AverageFilter.cpp" />
+    <ClCompile Include="src\DSP\CContext.cpp" />
+    <ClCompile Include="src\DSP\CProcessor.cpp" />
+    <ClCompile Include="src\DSP\EnvelopeFilter.cpp" />
+    <ClCompile Include="src\DSP\SampleRate.cpp" />
+    <ClCompile Include="src\SheetCanvasView.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\ofApp.cpp" />
     <ClCompile Include="src\SheetCanvas.cpp" />
@@ -205,6 +211,13 @@
   <ItemGroup>
     <ClInclude Include="src\ClockPattern.h" />
     <ClInclude Include="src\DeviceImageReader.h" />
+    <ClInclude Include="src\DSP\CContext.h" />
+    <ClInclude Include="src\DSP\Context.h" />
+    <ClInclude Include="src\DSP\CProcessor.h" />
+    <ClInclude Include="src\DSP\AverageFilter.h" />
+    <ClInclude Include="src\DSP\EnvelopeFilter.h" />
+    <ClInclude Include="src\DSP\Processor.h" />
+    <ClInclude Include="src\DSP\SampleRate.h" />
     <ClInclude Include="src\ofApp.h" />
     <ClInclude Include="src\RingBuffer.h" />
     <ClInclude Include="src\SheetCanvas.h" />

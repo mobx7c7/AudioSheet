@@ -43,6 +43,21 @@
     <ClCompile Include="src\StreamInput\ScannerInput.cpp">
       <Filter>src\StreamInput</Filter>
     </ClCompile>
+    <ClCompile Include="src\DSP\EnvelopeFilter.cpp">
+      <Filter>src\DSP</Filter>
+    </ClCompile>
+    <ClCompile Include="src\DSP\SampleRate.cpp">
+      <Filter>src\DSP</Filter>
+    </ClCompile>
+    <ClCompile Include="src\DSP\CContext.cpp">
+      <Filter>src\DSP</Filter>
+    </ClCompile>
+    <ClCompile Include="src\DSP\CProcessor.cpp">
+      <Filter>src\DSP</Filter>
+    </ClCompile>
+    <ClCompile Include="src\DSP\AverageFilter.cpp">
+      <Filter>src\DSP</Filter>
+    </ClCompile>
     <ClCompile Include="src\SoundPlayer\AVSoundReader.cpp">
       <Filter>src\SoundPlayer</Filter>
     </ClCompile>
@@ -80,6 +95,9 @@
     </Filter>
     <Filter Include="src\StreamInput\Platform\Windows">
       <UniqueIdentifier>{96b7d337-c9fa-429e-9ea2-423de164e8cc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\DSP">
+      <UniqueIdentifier>{c44a63d6-e32c-4407-8af3-7966b3c79c9d}</UniqueIdentifier>
     </Filter>
     <Filter Include="src\SoundPlayer">
       <UniqueIdentifier>{7275ee6a-a1a5-4a6b-898e-5898664d8a77}</UniqueIdentifier>
@@ -139,6 +157,27 @@
     </ClInclude>
     <ClInclude Include="src\SoundPlayer.h">
       <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\DSP\AverageFilter.h">
+      <Filter>src\DSP</Filter>
+    </ClInclude>
+    <ClInclude Include="src\DSP\EnvelopeFilter.h">
+      <Filter>src\DSP</Filter>
+    </ClInclude>
+    <ClInclude Include="src\DSP\Processor.h">
+      <Filter>src\DSP</Filter>
+    </ClInclude>
+    <ClInclude Include="src\DSP\SampleRate.h">
+      <Filter>src\DSP</Filter>
+    </ClInclude>
+    <ClInclude Include="src\DSP\Context.h">
+      <Filter>src\DSP</Filter>
+    </ClInclude>
+    <ClInclude Include="src\DSP\CContext.h">
+      <Filter>src\DSP</Filter>
+    </ClInclude>
+    <ClInclude Include="src\DSP\CProcessor.h">
+      <Filter>src\DSP</Filter>
     </ClInclude>
     <ClInclude Include="src\SoundPlayer\AVSoundPlayer.h">
       <Filter>src\SoundPlayer</Filter>
