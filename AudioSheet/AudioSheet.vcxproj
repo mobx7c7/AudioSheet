@@ -100,8 +100,8 @@
       <PreprocessorDefinitions>%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <WarningLevel>Level3</WarningLevel>
-      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <CompileAs>CompileAsCpp</CompileAs>
+      <AdditionalIncludeDirectories>
 C:\Sources\openFrameworks\addons\ofxDatGui\src;
 C:\Sources\openFrameworks\addons\ofxDatGui\src\components;
 C:\Sources\openFrameworks\addons\ofxDatGui\src\core;
@@ -126,9 +126,9 @@ C:\Sources\openFrameworks\addons\ofxDatGui\src\themes;%(AdditionalIncludeDirecto
       <PreprocessorDefinitions>%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <WarningLevel>Level3</WarningLevel>
-      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <CompileAs>CompileAsCpp</CompileAs>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <AdditionalIncludeDirectories>
 C:\Sources\openFrameworks\addons\ofxDatGui\src;
 C:\Sources\openFrameworks\addons\ofxDatGui\src\components;
 C:\Sources\openFrameworks\addons\ofxDatGui\src\core;
@@ -152,9 +152,9 @@ C:\Sources\openFrameworks\addons\ofxDatGui\src\themes;%(AdditionalIncludeDirecto
       <PreprocessorDefinitions>%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <WarningLevel>Level3</WarningLevel>
-      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <CompileAs>CompileAsCpp</CompileAs>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <AdditionalIncludeDirectories>
 C:\Sources\openFrameworks\addons\ofxDatGui\src;
 C:\Sources\openFrameworks\addons\ofxDatGui\src\components;
 C:\Sources\openFrameworks\addons\ofxDatGui\src\core;
@@ -181,8 +181,8 @@ C:\Sources\openFrameworks\addons\ofxDatGui\src\themes;%(AdditionalIncludeDirecto
       <PreprocessorDefinitions>%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <WarningLevel>Level3</WarningLevel>
-      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <CompileAs>CompileAsCpp</CompileAs>
+      <AdditionalIncludeDirectories>
 C:\Sources\openFrameworks\addons\ofxDatGui\src;
 C:\Sources\openFrameworks\addons\ofxDatGui\src\components;
 C:\Sources\openFrameworks\addons\ofxDatGui\src\core;
