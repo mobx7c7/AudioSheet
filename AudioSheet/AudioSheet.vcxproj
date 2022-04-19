@@ -102,6 +102,12 @@
       <WarningLevel>Level3</WarningLevel>
       <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <CompileAs>CompileAsCpp</CompileAs>
+C:\Sources\openFrameworks\addons\ofxDatGui\src;
+C:\Sources\openFrameworks\addons\ofxDatGui\src\components;
+C:\Sources\openFrameworks\addons\ofxDatGui\src\core;
+C:\Sources\openFrameworks\addons\ofxDatGui\src\libs;
+C:\Sources\openFrameworks\addons\ofxDatGui\src\libs\ofxSmartFont;
+C:\Sources\openFrameworks\addons\ofxDatGui\src\themes;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -123,6 +129,12 @@
       <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <CompileAs>CompileAsCpp</CompileAs>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+C:\Sources\openFrameworks\addons\ofxDatGui\src;
+C:\Sources\openFrameworks\addons\ofxDatGui\src\components;
+C:\Sources\openFrameworks\addons\ofxDatGui\src\core;
+C:\Sources\openFrameworks\addons\ofxDatGui\src\libs;
+C:\Sources\openFrameworks\addons\ofxDatGui\src\libs\ofxSmartFont;
+C:\Sources\openFrameworks\addons\ofxDatGui\src\themes;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -143,6 +155,12 @@
       <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <CompileAs>CompileAsCpp</CompileAs>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+C:\Sources\openFrameworks\addons\ofxDatGui\src;
+C:\Sources\openFrameworks\addons\ofxDatGui\src\components;
+C:\Sources\openFrameworks\addons\ofxDatGui\src\core;
+C:\Sources\openFrameworks\addons\ofxDatGui\src\libs;
+C:\Sources\openFrameworks\addons\ofxDatGui\src\libs\ofxSmartFont;
+C:\Sources\openFrameworks\addons\ofxDatGui\src\themes;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
@@ -165,6 +183,12 @@
       <WarningLevel>Level3</WarningLevel>
       <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <CompileAs>CompileAsCpp</CompileAs>
+C:\Sources\openFrameworks\addons\ofxDatGui\src;
+C:\Sources\openFrameworks\addons\ofxDatGui\src\components;
+C:\Sources\openFrameworks\addons\ofxDatGui\src\core;
+C:\Sources\openFrameworks\addons\ofxDatGui\src\libs;
+C:\Sources\openFrameworks\addons\ofxDatGui\src\libs\ofxSmartFont;
+C:\Sources\openFrameworks\addons\ofxDatGui\src\themes;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
@@ -180,6 +204,9 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\..\addons\ofxDatGui\src\core\ofxDatGuiComponent.cpp" />
+    <ClCompile Include="..\..\..\addons\ofxDatGui\src\libs\ofxSmartFont\ofxSmartFont.cpp" />
+    <ClCompile Include="..\..\..\addons\ofxDatGui\src\ofxDatGui.cpp" />
     <ClCompile Include="src\ClockPattern.cpp" />
     <ClCompile Include="src\DeviceImageReader.cpp" />
     <ClCompile Include="src\DSP\AverageFilter.cpp" />
@@ -209,6 +236,27 @@
     <ClCompile Include="src\StreamInput\ScannerInput.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\..\addons\ofxDatGui\src\components\ofxDatGui2dPad.h" />
+    <ClInclude Include="..\..\..\addons\ofxDatGui\src\components\ofxDatGuiButton.h" />
+    <ClInclude Include="..\..\..\addons\ofxDatGui\src\components\ofxDatGuiColorPicker.h" />
+    <ClInclude Include="..\..\..\addons\ofxDatGui\src\components\ofxDatGuiControls.h" />
+    <ClInclude Include="..\..\..\addons\ofxDatGui\src\components\ofxDatGuiFRM.h" />
+    <ClInclude Include="..\..\..\addons\ofxDatGui\src\components\ofxDatGuiGroups.h" />
+    <ClInclude Include="..\..\..\addons\ofxDatGui\src\components\ofxDatGuiLabel.h" />
+    <ClInclude Include="..\..\..\addons\ofxDatGui\src\components\ofxDatGuiMatrix.h" />
+    <ClInclude Include="..\..\..\addons\ofxDatGui\src\components\ofxDatGuiScrollView.h" />
+    <ClInclude Include="..\..\..\addons\ofxDatGui\src\components\ofxDatGuiSlider.h" />
+    <ClInclude Include="..\..\..\addons\ofxDatGui\src\components\ofxDatGuiTextInput.h" />
+    <ClInclude Include="..\..\..\addons\ofxDatGui\src\components\ofxDatGuiTextInputField.h" />
+    <ClInclude Include="..\..\..\addons\ofxDatGui\src\components\ofxDatGuiTimeGraph.h" />
+    <ClInclude Include="..\..\..\addons\ofxDatGui\src\core\ofxDatGuiComponent.h" />
+    <ClInclude Include="..\..\..\addons\ofxDatGui\src\core\ofxDatGuiConstants.h" />
+    <ClInclude Include="..\..\..\addons\ofxDatGui\src\core\ofxDatGuiEvents.h" />
+    <ClInclude Include="..\..\..\addons\ofxDatGui\src\core\ofxDatGuiIntObject.h" />
+    <ClInclude Include="..\..\..\addons\ofxDatGui\src\libs\ofxSmartFont\ofxSmartFont.h" />
+    <ClInclude Include="..\..\..\addons\ofxDatGui\src\ofxDatGui.h" />
+    <ClInclude Include="..\..\..\addons\ofxDatGui\src\themes\ofxDatGuiTheme.h" />
+    <ClInclude Include="..\..\..\addons\ofxDatGui\src\themes\ofxDatGuiThemes.h" />
     <ClInclude Include="src\ClockPattern.h" />
     <ClInclude Include="src\DeviceImageReader.h" />
     <ClInclude Include="src\DSP\CContext.h" />
