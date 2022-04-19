@@ -13,9 +13,6 @@
     <ClCompile Include="src\SheetCanvas.cpp">
       <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="src\SheetStream.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
     <ClCompile Include="src\StreamInput.cpp">
       <Filter>src</Filter>
     </ClCompile>
@@ -150,9 +147,6 @@
       <Filter>src</Filter>
     </ClInclude>
     <ClInclude Include="src\SheetCanvas.h">
-      <Filter>src</Filter>
-    </ClInclude>
-    <ClInclude Include="src\SheetStream.h">
       <Filter>src</Filter>
     </ClInclude>
     <ClInclude Include="src\StreamInput.h">

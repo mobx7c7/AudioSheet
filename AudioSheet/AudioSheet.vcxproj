@@ -227,7 +227,6 @@ C:\Sources\openFrameworks\addons\ofxDatGui\src\themes;%(AdditionalIncludeDirecto
     <ClCompile Include="src\SoundPlayer\AVSoundResampler.cpp" />
     <ClCompile Include="src\SoundPlayer\AVUtils.cpp" />
     <ClCompile Include="src\StreamInput.cpp" />
-    <ClCompile Include="src\SheetStream.cpp" />
     <ClCompile Include="src\StreamInput\Platform\Windows\BitmapUtil.cpp" />
     <ClCompile Include="src\StreamInput\Platform\Windows\CWiaDataCallback.cpp" />
     <ClCompile Include="src\StreamInput\Platform\Windows\CWiaTransferCallback.cpp" />
@@ -284,7 +283,6 @@ C:\Sources\openFrameworks\addons\ofxDatGui\src\themes;%(AdditionalIncludeDirecto
     <ClInclude Include="src\SoundPlayer\AVUtils.hpp" />
     <ClInclude Include="src\StreamEvent.h" />
     <ClInclude Include="src\StreamInput.h" />
-    <ClInclude Include="src\SheetStream.h" />
     <ClInclude Include="src\StreamInput\Platform\Windows\BitmapUtil.h" />
     <ClInclude Include="src\StreamInput\Platform\Windows\CComPtrArray.h" />
     <ClInclude Include="src\StreamInput\Platform\Windows\CWiaDataCallback.h" />
