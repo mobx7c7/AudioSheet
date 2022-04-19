@@ -12,7 +12,6 @@ struct Bounds{vec2 xrange, yrange;};
 
 struct View
 {
-    vec2 mag;
     vec4 map; //xy=uv, z=sdf, w=mask
     Rect window;
     Bounds margin;
@@ -102,62 +101,23 @@ Rect view_add_bounds(Rect r, Bounds b)
     return r;
 }
 
-void view_add_bounds2(Bounds b, out Rect r)
-{   
-    vec2 kmin = vec2(b.xrange.x, b.yrange.x);
-    vec2 kmax = vec2(b.xrange.y, b.yrange.y);
-    r.pos += kmin;
-    r.siz -= kmin+kmax;
-}
-
-
-void view_init_map(vec2 uv, out View view)
+View view_get_root(vec2 uv)
 {
-    Rect r1 = view.window;
-
-    view_add_bounds2(view.margin, r1);
-
-    view.map = sd_rect(uv, r1, view.window);
+    View view;
+    //view.margin.xrange = vec2(10,10);
+    //view.margin.yrange = vec2(10,10);
+    view.window.siz = vec2(window.siz);
+    view.map = sd_rect(uv, view_add_bounds(view.window, view.margin), view.window);
+    return view;
 }
 
 vec4 view_get_map(View src, View dst)
 {
-    Rect r1 = src.window;
-    
-    view_add_bounds2(r1, src.margin);
-
-    vec4 o = sd_rect(dst.map.xy, r, dst.window);
-    
+    vec4 o = sd_rect(dst.map.xy, view_add_bounds(src.window, src.margin), dst.window);
     o.w *= dst.map.w;
-    
     return o;
 }
 
-
-
-void view_get_map2(View src, View dst)
-{
-    Rect r1 = src.window;
-    
-    view_add_bounds2(r1, src.margin);
-
-    vec4 o = sd_rect(dst.map.xy, r, dst.window);
-    
-    o.w *= dst.map.w;
-    
-    return o;
-}
-
-void view_get_root(vec2 uv, out View view)
-{
-    view.mag = vec2(1); // 1:1
-    view.window.siz = vec2(window.siz);
-    view_init_map(uv, view);
-}
-
-
-//
-/*
 vec4 tracks_sdf(View view, int count, int bandguard)
 {
     vec4 o;
@@ -165,9 +125,10 @@ vec4 tracks_sdf(View view, int count, int bandguard)
     // coord map
     o.xy = fract(uv * vec2(1,count));
     o.y = abs(SVALUE(o.y));
-    
+
     // index map
-    o.z = floor(dot(uv,vec2(0,1)) * count) /count;
+    o.z = floor(dot(uv,vec2(0,1)) * count);
+    o.z /= count;
     // track mask
     o.w = view.map.w;
     // bandguard mask
@@ -176,88 +137,44 @@ vec4 tracks_sdf(View view, int count, int bandguard)
     o.w *= step(o.y,1-q0);
     return o;
 }
-*/
-vec4 tracks_sdf(View view, int count, int bandguard)
-{
-    vec4 o;
-    vec2 uv = view.map.xy;
-
-    // coord map
-    o.xy = uv;
-    o.xy = fract(o.xy * vec2(1,count));
-
-    float q0 = count/float(bandguard);
-    
-    {
-        //
-       // o.y /= 1-q0*2;
-       //o.y+=q0;
-        //o.y-=q0;
-        //o.y/=q0;
-       //o.y = abs(SVALUE(o.y));
-      
-    }
-    
-    // index map
-    //o.z = floor(dot(uv,vec2(0,1)) * count) /count;
-
-    // track mask
-    o.w = view.map.w;
-    o.w *= step(o.x,1.)*step(0.,o.x);
-    o.w *= step(o.y,1.)*step(0.,o.y);
-
-    return o;
-}
 
 float smoothstep2(float x, float y, float d)
 {
     return smoothstep(x-d, x+d, y);
 }
 
-void view_add_margin(vec2 xrange, vec2 yrange, out View v)
-{
-    Bounds b2;
-    b2 = v.margin;
-    b2.xrange += xrange;
-    b2.yrange += yrange;
-    v.margin = b2;
-}
-
-void view_add_margin(Bounds b, out View v)
-{
-    Bounds b2;
-    b2 = v.margin;
-    b2.xrange += b.xrange;
-    b2.yrange += b.yrange;
-    v.margin = b2;
-}
-
-vec4 tracks_main(View view)
+vec4 tracks_main(vec2 uv)
 {
     //int tracks = 32; // units
     //int bandguard = 10; // pixels
 
-    View v0 = view;
-    View v1 = view;
-    View v2 = view;
+    View v0,v1,v2;
 
-    view_add_margin(page.margin.xrange, page.margin.yrange, v1);
+    v0 = view_get_root(uv);
+    v1 = v0;
+    v2 = v0;
+
+    v1.margin.xrange = page.margin.xrange;
+    v1.margin.yrange = page.margin.yrange;
+    //v1.margin = page.margin;
+    //bounds_copy(page.margin, v1.margin);
     v1.map = view_get_map(v1, v0);
 
-    view_add_margin(vec2(page.bandguard), vec2(page.bandguard), v2);
+    v2.margin.xrange = vec2(page.bandguard);
+    v2.margin.yrange = vec2(page.bandguard/2);
     v2.map = view_get_map(v2, v1);
 
-    vec4 map = tracks_sdf(v2, page.tracks, page.bandguard);
+    vec4 map = tracks_sdf(v2, page.tracks, page.bandguard/2);
 
-    float wave = texture(channel0.tex, map.xz*vec2(.15,1)).r;
+    float wave = texture(channel0.tex, map.xz).r;
+    //float wave = texture(channel0.tex, map.xz*vec2(.15,0)).r;
     wave *= 0.85;
 
     float d = page.tracks/window.siz.x;
     wave = smoothstep2(wave,map.y,d*10.);
 
-    //wave = step(wave,map.y)
-    //return  vec4(vec3(wave)*map.w, v1.map.w);
-    return map;
+    //wave = step(wave,map.y);
+    return  vec4(vec3(wave)*map.w, v1.map.w);
 }
 //
 vec4 grid_main(vec2 uv, float freq)
@@ -280,19 +197,18 @@ vec4 grid_main(vec2 uv, float freq)
     
     return o;
 }
-
+//
 void main()
 {
     vec2 uv = gl_FragCoord.xy / window.siz.xy;
 
-    //vec4 c0 = vec4(0.8,0,0,1); //grid_main(uv,10);
+    vec4 color,c0,c1;
 
-    //vec4 c1 = tracks_main(view_get_root(uv));
+    //c0 = grid_main(uv,10);
+    c0 = vec4(0.8,0,0,1);
+    c1 = tracks_main(uv);
+
+    color = mix(c0,c1,c1.a);
    
-    //fragOut = mix(c0,c1,c1.a);
-
-    View view;
-    view_get_root(uv, view);
-
-    fragOut = view.map;
+    fragOut = color;
 }
