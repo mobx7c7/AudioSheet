@@ -263,6 +263,9 @@
     <ClInclude Include="src\SheetCanvasView.h">
       <Filter>src</Filter>
     </ClInclude>
+    <ClInclude Include="src\StreamUtils.h">
+      <Filter>src</Filter>
+    </ClInclude>
     <ClInclude Include="src\SoundPlayerView.h">
       <Filter>src</Filter>
     </ClInclude>

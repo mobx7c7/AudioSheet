@@ -294,6 +294,7 @@ C:\Sources\openFrameworks\addons\ofxDatGui\src\themes;%(AdditionalIncludeDirecto
     <ClInclude Include="src\StreamInput\Platform\Windows\WiaScannerInput2.h" />
     <ClInclude Include="src\StreamInput\ScannerInput.h" />
     <ClInclude Include="src\StreamInput\ScannerInputEvent.h" />
+    <ClInclude Include="src\StreamUtils.h" />
     <ClInclude Include="src\View.h" />
   </ItemGroup>
   <ItemGroup>
